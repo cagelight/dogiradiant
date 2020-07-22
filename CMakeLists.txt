@@ -18,8 +18,11 @@ if( UNIX )
 	set( PLATFORM_LIBS "-lX11" )
 endif()
 
+ENABLE_LANGUAGE( C )
+ENABLE_LANGUAGE( CXX )
+
 set( CMAKE_C_FLAGS   "-fPIC" )
-set( CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -std=c99" )
+set( CMAKE_CXX_FLAGS "-fPIC -std=c++11" )
 
 set( CMAKE_C_FLAGS_DEBUG   "-Wall -Og -march=core2 -mtune=native -ggdb3" )
 set( CMAKE_C_FLAGS_RELEASE "-w -O2 -march=core2 -mtune=generic" )
