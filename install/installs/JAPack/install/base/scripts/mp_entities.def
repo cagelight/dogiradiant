@@ -1690,7 +1690,7 @@ When time limit is reached you wait for game to end looking from here. This when
 */
 
 
-/*QUAKED func_group (0 0 0) ?
+/*QUAKED func_group (1 1 1) ?
 ===========DESCRIPTION============================
 Used to group brushes together just for editor convenience.  They are turned into normal brushes by the utilities.
 ===========KEYS&VALUES============================
