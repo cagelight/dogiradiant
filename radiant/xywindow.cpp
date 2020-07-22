@@ -2194,7 +2194,7 @@ void XYWnd::XY_DrawGrid(){
 	float w, h;
 	char text[32];
 	int step, stepx, stepy, colour;
-	step = stepx = stepy = MAX( 64, (int)g_qeglobals.d_gridsize );
+	step = stepx = stepy = g_qeglobals.d_gridsize * 8;
 
 /*
 	int stepSize = (int)(8 / m_fScale);
