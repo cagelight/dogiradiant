@@ -311,10 +311,24 @@ void CamWnd::Cam_PositionDrag(){
 
 	Sys_GetCursorPos( &x, &y );
 	if ( x != m_ptCursorX || y != m_ptCursorY ) {
-		x -= m_ptCursorX;
-		VectorMA( m_Camera.origin, x, m_Camera.vright, m_Camera.origin );
-		y -= m_ptCursorY;
-		m_Camera.origin[2] -= y;
+		float xf = (x - m_ptCursorX) * 0.5f;
+		float yf = (y - m_ptCursorY) * 0.5f;
+		VectorMA( m_Camera.origin, xf, m_Camera.vright, m_Camera.origin );
+		m_Camera.origin[2] -= yf;
+		Sys_SetCursorPos( m_ptCursorX, m_ptCursorY );
+		Sys_UpdateWindows( W_CAMERA | W_XY_OVERLAY );
+	}
+}
+
+void CamWnd::Cam_PositionDragNew(){
+	int x, y;
+
+	Sys_GetCursorPos( &x, &y );
+	if ( x != m_ptCursorX || y != m_ptCursorY ) {
+		float xf = (x - m_ptCursorX) * 0.5f;
+		float yf = (y - m_ptCursorY) * 0.5f;
+		VectorMA( m_Camera.origin, xf, m_Camera.vright, m_Camera.origin );
+		VectorMA( m_Camera.origin, -yf, m_Camera.vup, m_Camera.origin );
 		Sys_SetCursorPos( m_ptCursorX, m_ptCursorY );
 		Sys_UpdateWindows( W_CAMERA | W_XY_OVERLAY );
 	}
@@ -327,7 +341,7 @@ void CamWnd::Cam_MouseControl( float dtime ){
 		int dx, dy;
 		gint x, y;
 
-		if ( !m_bFreeMove || m_nCambuttonstate == MK_CONTROL ) {
+		if ( !m_bFreeMove || m_nCambuttonstate == MK_CONTROL || m_nCambuttonstate == ( MK_CONTROL | MK_SHIFT ) ) {
 			return;
 		}
 
@@ -707,6 +721,12 @@ void CamWnd::Cam_MouseMoved( int x, int y, int buttons ){
 	m_ptButtonY = y;
 
 	if ( ( m_bFreeMove && ( buttons & MK_CONTROL ) && !( buttons & MK_SHIFT ) ) || ( !m_bFreeMove && ( buttons == ( MK_RBUTTON | MK_CONTROL ) ) ) ) {
+		Cam_PositionDragNew();
+		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
+		return;
+	}
+	
+	if ( ( m_bFreeMove && ( buttons & MK_CONTROL ) && ( buttons & MK_SHIFT ) ) || ( !m_bFreeMove && ( buttons == ( MK_RBUTTON | MK_CONTROL | MK_SHIFT ) ) ) ) {
 		Cam_PositionDrag();
 		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
 		return;
