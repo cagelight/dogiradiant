@@ -372,7 +372,7 @@ void PackDirectory_r( char *dir ){
 		if ( stat( dirstring, &st ) == -1 ) {
 			Error( "fstating %s", pf->name );
 		}
-		if ( st.st_mode & S_IFDIR ) { // directory
+		if ( S_ISDIR(st.st_mode) ) { // directory
 			PackDirectory_r( fullname );
 			continue;
 		}

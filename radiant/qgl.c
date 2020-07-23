@@ -1050,7 +1050,7 @@ void WINAPI gluLookAt2( GLdouble ex, GLdouble ey, GLdouble ez, GLdouble cx, GLdo
 }
 
 void WINAPI gluPerspective2( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar ){
-	GLdouble y = zNear * tan( fovy * M_PI / 360.0 );
+	GLdouble y = zNear * tan( fovy * 3.14159265359f / 360.0 );
 	qglFrustum( -y * aspect, y * aspect, -y, y, zNear, zFar );
 }
 
