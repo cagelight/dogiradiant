@@ -198,7 +198,6 @@ SCommandInfo g_Commands[] =
 	{"ToggleCamera", GDK_KEY_C, 0x05, ID_TOGGLECAMERA, "menu_togglecamera"},
 	{"ToggleConsole", GDK_KEY_O, 0, ID_TOGGLECONSOLE, "menu_toggleconsole"},
 	{"ToggleView", GDK_KEY_V, 0x05, ID_TOGGLEVIEW, "menu_toggleview"},
-	{"ToggleZ", GDK_KEY_Z, 0x05, ID_TOGGLEZ, "menu_togglez"},
 	{"ConnectSelection", GDK_KEY_K, 0x04, ID_SELECTION_CONNECT, "menu_selection_connect"},
 	{"Brush3Sided", GDK_KEY_3, 0x04, ID_BRUSH_3SIDED, "menu_brush_3sided"},
 	{"Brush4Sided", GDK_KEY_4, 0x04, ID_BRUSH_4SIDED, "menu_brush_4sided"},
@@ -226,8 +225,6 @@ SCommandInfo g_Commands[] =
 	{"PasteToCamera", GDK_KEY_V, RAD_ALT, ID_EDIT_PASTEBRUSHTOCAMERA, "menu_edit_pastebrushtocamera"},
 	{"Undo", GDK_KEY_Z, 0x04, ID_EDIT_UNDO, "menu_edit_undo"},
 	{"Redo", GDK_KEY_Y, 0x04, ID_EDIT_REDO, "menu_edit_redo"},
-	{"ZZoomOut", GDK_KEY_Insert, 0x04, ID_VIEW_ZZOOMOUT, "menu_view_zzoomout"},
-	{"ZZoomIn", GDK_KEY_Delete, 0x04, ID_VIEW_ZZOOMIN, "menu_view_zzoomin"},
 	{"TexRotateClock", GDK_KEY_Next, 0x01, ID_SELECTION_TEXTURE_ROTATECLOCK, "menu_selection_texture_rotateclock"},
 	{"TexRotateCounter", GDK_KEY_Prior, 0x01, ID_SELECTION_TEXTURE_ROTATECOUNTER, "menu_selection_texture_rotatecounter"},
 	{"TexScaleUp", GDK_KEY_Up, 0x04, ID_SELECTION_TEXTURE_SCALEUP, "menu_selection_texture_scaleup"},
@@ -470,7 +467,6 @@ gint HandleCommand( GtkWidget *widget, gpointer data ){
 		  case ID_TOGGLEVIEW: g_pParentWnd->OnToggleview(); break;
 		  case ID_TOGGLEVIEW_YZ: g_pParentWnd->OnToggleviewYz(); break;
 		  case ID_TOGGLEVIEW_XZ: g_pParentWnd->OnToggleviewXz(); break;
-		  case ID_TOGGLEZ: g_pParentWnd->OnTogglez(); break;
 		  case ID_VIEW_CENTER: g_pParentWnd->OnViewCenter(); break;
 		  case ID_VIEW_UPFLOOR: g_pParentWnd->OnViewUpfloor(); break;
 		  case ID_VIEW_DOWNFLOOR: g_pParentWnd->OnViewDownfloor(); break;
@@ -482,9 +478,6 @@ gint HandleCommand( GtkWidget *widget, gpointer data ){
 		  case ID_VIEW_100: g_pParentWnd->OnView100(); break;
 		  case ID_VIEW_ZOOMIN: g_pParentWnd->OnViewZoomin(); break;
 		  case ID_VIEW_ZOOMOUT: g_pParentWnd->OnViewZoomout(); break;
-		  case ID_VIEW_Z100: g_pParentWnd->OnViewZ100(); break;
-		  case ID_VIEW_ZZOOMIN: g_pParentWnd->OnViewZzoomin(); break;
-		  case ID_VIEW_ZZOOMOUT: g_pParentWnd->OnViewZzoomout(); break;
 		  case ID_VIEW_CUBEIN: g_pParentWnd->OnViewCubein(); break;
 		  case ID_VIEW_CUBEOUT: g_pParentWnd->OnViewCubeout(); break;
 		  case ID_VIEW_SHOWNAMES: g_pParentWnd->OnViewShownames(); break;
@@ -1073,7 +1066,6 @@ void MainFrame::create_main_menu( GtkWidget *window, GtkWidget *vbox ){
 	create_menu_item_with_mnemonic( menu_in_menu, _( "XY (Top)" ), G_CALLBACK( HandleCommand ), ID_TOGGLEVIEW );
 	create_menu_item_with_mnemonic( menu_in_menu, _( "YZ (Side)" ), G_CALLBACK( HandleCommand ), ID_TOGGLEVIEW_YZ );
 	create_menu_item_with_mnemonic( menu_in_menu, _( "XZ (Front)" ), G_CALLBACK( HandleCommand ), ID_TOGGLEVIEW_XZ );
-	create_menu_item_with_mnemonic( menu_in_menu, _( "Z View" ), G_CALLBACK( HandleCommand ), ID_TOGGLEZ );
 	menu_separator( menu );
 	item = create_menu_item_with_mnemonic( menu, _( "_Center" ), G_CALLBACK( HandleCommand ), ID_VIEW_CENTER );
 	item = create_menu_item_with_mnemonic( menu, _( "_Center 2d" ), G_CALLBACK( HandleCommand ), ID_VIEW_CENTERVIEW );
@@ -1089,12 +1081,6 @@ void MainFrame::create_main_menu( GtkWidget *window, GtkWidget *vbox ){
 	create_menu_item_with_mnemonic( menu_in_menu, _( "_XY 100%" ), G_CALLBACK( HandleCommand ), ID_VIEW_100 );
 	item = create_menu_item_with_mnemonic( menu_in_menu, _( "XY Zoom _In" ), G_CALLBACK( HandleCommand ), ID_VIEW_ZOOMIN );
 	item = create_menu_item_with_mnemonic( menu_in_menu, _( "XY Zoom _Out" ), G_CALLBACK( HandleCommand ), ID_VIEW_ZOOMOUT );
-	menu_separator( menu_in_menu );
-	create_menu_item_with_mnemonic( menu_in_menu, _( "_Z 100%" ), G_CALLBACK( HandleCommand ), ID_VIEW_Z100 );
-	item = create_menu_item_with_mnemonic( menu_in_menu, _( "Z Zoo_m In" ), G_CALLBACK( HandleCommand ), ID_VIEW_ZZOOMIN );
-	g_object_set_data( G_OBJECT( window ), "menu_view_zzoomin", item );
-	item = create_menu_item_with_mnemonic( menu_in_menu, _( "Z Zoom O_ut" ), G_CALLBACK( HandleCommand ), ID_VIEW_ZZOOMOUT );
-	g_object_set_data( G_OBJECT( window ), "menu_view_zzoomout", item );
 	menu_separator( menu_in_menu );
 	item = create_menu_item_with_mnemonic( menu_in_menu, _( "Cubic Clip Zoom In" ), G_CALLBACK( HandleCommand ), ID_VIEW_CUBEIN );
 	item = create_menu_item_with_mnemonic( menu_in_menu, _( "Cubic Clip Zoom Out" ), G_CALLBACK( HandleCommand ), ID_VIEW_CUBEOUT );
@@ -2073,9 +2059,6 @@ static void mainframe_map( GtkWidget *widget ){
 	if ( ( g_pParentWnd->CurrentStyle() == MainFrame::eFloating ) && ( widget == g_pParentWnd->m_pWidget ) ) {
 		// restore previously visible windows
 		CHECK_RESTORE( g_pParentWnd->GetCamWnd()->m_pParent );
-		if ( g_PrefsDlg.m_bFloatingZ ) {
-			CHECK_RESTORE( g_pParentWnd->GetZWnd()->m_pParent );
-		}
 		CHECK_RESTORE( g_pParentWnd->GetXYWnd()->m_pParent );
 		CHECK_RESTORE( g_pParentWnd->GetXZWnd()->m_pParent );
 		CHECK_RESTORE( g_pParentWnd->GetYZWnd()->m_pParent );
@@ -2093,9 +2076,6 @@ static void mainframe_unmap( GtkWidget *widget ){
 	if ( ( g_pParentWnd->CurrentStyle() == MainFrame::eFloating ) && ( widget == g_pParentWnd->m_pWidget ) ) {
 		// minimize all other windows when the main window is minimized
 		CHECK_MINIMIZE( g_pParentWnd->GetCamWnd()->m_pParent );
-		if ( g_PrefsDlg.m_bFloatingZ ) {
-			CHECK_MINIMIZE( g_pParentWnd->GetZWnd()->m_pParent );
-		}
 		CHECK_MINIMIZE( g_pParentWnd->GetXYWnd()->m_pParent );
 		CHECK_MINIMIZE( g_pParentWnd->GetXZWnd()->m_pParent );
 		CHECK_MINIMIZE( g_pParentWnd->GetYZWnd()->m_pParent );
@@ -2518,49 +2498,6 @@ GtkWidget* create_framed_texwnd( TexWnd* texwnd ){
 	return frame;
 }
 
-static ZWnd *create_floating_zwnd( MainFrame *mainframe ){
-	ZWnd *pZWnd = new ZWnd();
-	GtkWidget* wnd = create_floating( mainframe );
-
-	gtk_window_set_title( GTK_WINDOW( wnd ), _( "Z" ) );
-
-	pZWnd->m_pParent = wnd;
-
-	{
-		GtkWidget* frame = create_framed_widget( pZWnd->GetWidget() );
-		gtk_container_add( GTK_CONTAINER( wnd ), frame );
-	}
-
-	gtk_widget_realize( wnd );
-
-	// turn OFF minimize and maximize boxes.
-	// Must be *after* realize, or gtk_widget_get_window( wnd ) is NULL
-	// should do the right thing on *nix, need to verify.
-	gdk_window_set_decorations( gtk_widget_get_window( wnd ),
-								GdkWMDecoration( GDK_DECOR_ALL | GDK_DECOR_MINIMIZE | GDK_DECOR_MAXIMIZE ) );
-	//TODO 50 by observation, will vary depending on decoration sizes
-	{
-		GdkGeometry geometry;
-		geometry.min_width = 50;
-		//we only care about width, but have to set this too, or get nasty bugs
-		geometry.min_height = 10;
-		gdk_window_set_geometry_hints( gtk_widget_get_window( wnd ), &geometry, GDK_HINT_MIN_SIZE );
-	}
-
-#ifdef _WIN32
-	if ( g_PrefsDlg.m_bStartOnPrimMon ) {
-		PositionWindowOnPrimaryScreen( g_PrefsDlg.mWindowInfo.posZWnd );
-	}
-#endif
-	load_window_pos( wnd, g_PrefsDlg.mWindowInfo.posZWnd );
-
-	if ( g_PrefsDlg.m_bZVis ) {
-		gtk_widget_show( wnd );
-	}
-
-	return pZWnd;
-}
-
 static const int gutter = 12;
 
 void MainFrame::Create(){
@@ -2728,18 +2665,6 @@ void MainFrame::Create(){
 							gtk_paned_add1( GTK_PANED( hsplit2 ), frame );
 						}
 
-						// z
-						m_pZWnd = new ZWnd();
-						{
-							GtkWidget* frame = create_framed_widget( m_pZWnd->GetWidget() );
-							if ( CurrentStyle() == eRegular ) {
-								gtk_paned_add1( GTK_PANED( hsplit ), frame );
-							}
-							else{
-								gtk_paned_add2( GTK_PANED( hsplit2 ), frame );
-							}
-						}
-
 						// textures
 						m_pTexWnd = new TexWnd();
 						{
@@ -2793,7 +2718,6 @@ void MainFrame::Create(){
 		gtk_paned_set_position( GTK_PANED( m_pSplits[0] ), g_PrefsDlg.mWindowInfo.nXYHeight );
 
 		if ( CurrentStyle() == eRegular ) {
-			gtk_paned_set_position( GTK_PANED( m_pSplits[2] ), g_PrefsDlg.mWindowInfo.nZWidth );
 			gtk_paned_set_position( GTK_PANED( m_pSplits[3] ), g_PrefsDlg.mWindowInfo.nXYWidth );
 		}
 		else
@@ -2828,34 +2752,6 @@ void MainFrame::Create(){
 			m_pCamWnd->m_pParent = wnd;
 		}
 
-		if ( g_PrefsDlg.m_bFloatingZ ) {
-			m_pZWnd = create_floating_zwnd( this );
-
-			{
-				GtkWidget* wnd = create_floating( this );
-				gtk_window_set_title( GTK_WINDOW( wnd ), _( "XY View" ) );
-
-#ifdef _WIN32
-				if ( g_PrefsDlg.m_bStartOnPrimMon ) {
-					PositionWindowOnPrimaryScreen( g_PrefsDlg.mWindowInfo.posXYWnd );
-				}
-#endif
-				load_window_pos( wnd, g_PrefsDlg.mWindowInfo.posXYWnd );
-
-				m_pXYWnd = new XYWnd();
-				m_pXYWnd->SetViewType( XY );
-
-				{
-					GtkWidget* frame = create_framed_widget( m_pXYWnd->GetWidget() );
-					gtk_container_add( GTK_CONTAINER( wnd ), frame );
-				}
-
-				m_pXYWnd->m_pParent = wnd;
-
-				gtk_widget_show( wnd );
-			}
-		}
-		else
 		{
 			GtkWidget* wnd = create_floating( this );
 			gtk_window_set_title( GTK_WINDOW( wnd ), _( "XY View" ) );
@@ -2866,9 +2762,6 @@ void MainFrame::Create(){
 			}
 #endif
 			load_window_pos( wnd, g_PrefsDlg.mWindowInfo.posXYWnd );
-
-			m_pZWnd = new ZWnd();
-			m_pZWnd->m_pParent = wnd;
 
 			m_pXYWnd = new XYWnd();
 			m_pXYWnd->SetViewType( XY );
@@ -2882,18 +2775,12 @@ void MainFrame::Create(){
 				gtk_widget_show( hsplit );
 
 				{
-					GtkWidget* frame = create_framed_widget( m_pZWnd->GetWidget() );
-					gtk_paned_add1( GTK_PANED( hsplit ), frame );
-				}
-				{
 					GtkWidget* frame = create_framed_widget( m_pXYWnd->GetWidget() );
 					gtk_paned_add2( GTK_PANED( hsplit ), frame );
 				}
 			}
 
 			gtk_widget_show( wnd );
-
-			gtk_paned_set_position( GTK_PANED( m_pSplits[0] ), g_PrefsDlg.mWindowInfo.nZFloatWidth );
 		}
 
 		{
@@ -3062,7 +2949,6 @@ void MainFrame::Create(){
 		}
 
 		m_pTexWnd->m_pParent = g_pGroupDlg->m_pWidget;
-		m_pZWnd = create_floating_zwnd( this );
 
 		while ( gtk_events_pending() )
 			gtk_main_iteration();
@@ -3149,7 +3035,6 @@ MainFrame::MainFrame(){
 	m_pXYWnd = (XYWnd*)NULL;
 	m_pCamWnd = NULL;
 	m_pTexWnd = (TexWnd*)NULL;
-	m_pZWnd = (ZWnd*)NULL;
 	m_pYZWnd = (XYWnd*)NULL;
 	m_pXZWnd = (XYWnd*)NULL;
 	m_pActiveXY = (XYWnd*)NULL;
@@ -3187,9 +3072,6 @@ void MainFrame::ReleaseContexts(){
 	if ( m_pTexWnd ) {
 		m_pTexWnd->DestroyContext();
 	}
-	if ( m_pZWnd ) {
-		m_pZWnd->DestroyContext();
-	}
 }
 
 void MainFrame::CreateContexts(){
@@ -3207,9 +3089,6 @@ void MainFrame::CreateContexts(){
 	}
 	if ( m_pTexWnd ) {
 		m_pTexWnd->CreateContext();
-	}
-	if ( m_pZWnd ) {
-		m_pZWnd->CreateContext();
 	}
 }
 
@@ -3287,10 +3166,6 @@ void MainFrame::OnSleep(){
 		DispatchRadiantMsg( RADIANT_SLEEP );
 		Sys_Printf( "Done.\n" );
 
-		if ( CurrentStyle() == eSplit ) {
-			Sys_Iconify( m_pZWnd->m_pParent );
-		}
-
 		Sys_Iconify( m_pWidget );
 		Select_Deselect();
 		QERApp_FreeShaders();
@@ -3308,9 +3183,6 @@ void MainFrame::OnSleep(){
 	else
 	{
 		Sys_Printf( "Waking up\n" );
-		if ( CurrentStyle() == eSplit ) {
-			Sys_Restore( m_pZWnd->m_pParent );
-		}
 
 		Sys_Restore( m_pWidget );
 
@@ -3425,13 +3297,7 @@ void MainFrame::OnDelete(){
 	// entity inspector / group dialog
 	// NOTE TTimo do we have to save a different window depending on the view mode?
 	save_window_pos( g_pGroupDlg->m_pWidget, g_PrefsDlg.mWindowInfo.posEntityWnd );
-
-	if ( g_PrefsDlg.m_bFloatingZ ) {
-		save_window_pos( m_pZWnd->m_pParent, g_PrefsDlg.mWindowInfo.posZWnd );
-	}
-	else{
-		g_PrefsDlg.mWindowInfo.nZFloatWidth = gtk_paned_get_position( GTK_PANED( m_pSplits[0] ) );
-	}
+		
 	if( g_PrefsDlg.m_bShowTexDirList && m_pSplits[4] ) {
 		g_PrefsDlg.mWindowInfo.nTextureDirectoryListWidth = gtk_paned_get_position( GTK_PANED( m_pSplits[4] ) );
 	}
@@ -3484,27 +3350,10 @@ void MainFrame::OnDestroy(){
 
 			g_PrefsDlg.mWindowInfo.nXYHeight  = gtk_paned_get_position( GTK_PANED( vsplit ) );
 			g_PrefsDlg.mWindowInfo.nXYWidth   = gtk_paned_get_position( GTK_PANED( hsplit2 ) );
-
-			if ( CurrentStyle() == eRegular ) {
-				g_PrefsDlg.mWindowInfo.nZWidth = gtk_paned_get_position( GTK_PANED( hsplit ) );
-			}
-			else{
-				g_PrefsDlg.mWindowInfo.nCamWidth = gtk_paned_get_position( GTK_PANED( hsplit ) );
-			}
-
+			g_PrefsDlg.mWindowInfo.nCamWidth = gtk_paned_get_position( GTK_PANED( hsplit ) );
 			g_PrefsDlg.mWindowInfo.nCamHeight = gtk_paned_get_position( GTK_PANED( vsplit2 ) );
 		}
-		else
-		{
-			if ( g_PrefsDlg.m_bFloatingZ || CurrentStyle() == eSplit ) {
-				if ( gtk_widget_get_visible( m_pZWnd->m_pParent ) ) {
-					g_PrefsDlg.m_bZVis = TRUE;
-				}
-				else{
-					g_PrefsDlg.m_bZVis = FALSE;
-				}
-			}
-		}
+		
 		g_PrefsDlg.SavePrefs();
 		Sys_Printf( "Done prefs\n" );
 	}
@@ -3516,7 +3365,6 @@ void MainFrame::OnDestroy(){
 	delete m_pXYWnd; m_pXYWnd = NULL;
 	delete m_pYZWnd; m_pYZWnd = NULL;
 	delete m_pXZWnd; m_pXZWnd = NULL;
-	delete m_pZWnd; m_pZWnd = NULL;
 	delete m_pTexWnd; m_pTexWnd = NULL;
 	delete m_pCamWnd; m_pCamWnd = NULL;
 
@@ -4082,12 +3930,6 @@ void MainFrame::UpdateWindows( int nBits ){
 	if ( nBits & W_CAMERA || ( ( nBits & W_CAMERA_IFON ) && m_bCamPreview ) ) {
 		if ( m_pCamWnd ) {
 			m_pCamWnd->RedrawWindow();
-		}
-	}
-
-	if ( nBits & ( W_Z | W_Z_OVERLAY ) ) {
-		if ( m_pZWnd ) {
-			m_pZWnd->RedrawWindow();
 		}
 	}
 
@@ -4785,7 +4627,6 @@ void MainFrame::OnPrefs() {
     bool    bToolbar            = g_PrefsDlg.m_bWideToolbar;
     bool    bPluginToolbar      = g_PrefsDlg.m_bPluginToolbar;
     bool    bDetachableMenus    = g_PrefsDlg.m_bDetachableMenus;
-    bool    bFloatingZ          = g_PrefsDlg.m_bFloatingZ;
 	bool    bShowTexDirList     = g_PrefsDlg.m_bShowTexDirList;
 
     g_PrefsDlg.LoadPrefs();
@@ -4798,20 +4639,10 @@ void MainFrame::OnPrefs() {
            (g_PrefsDlg.m_bLatchedPluginToolbar      != bPluginToolbar   ) ||
            (g_PrefsDlg.m_nLatchedShader             != nShader          ) ||
            (g_PrefsDlg.m_nLatchedTextureQuality     != nTextureQuality  ) || 
-           (g_PrefsDlg.m_bLatchedFloatingZ          != bFloatingZ       ) ||
 		   (g_PrefsDlg.m_bShowTexDirList            != bShowTexDirList)) {
             gtk_MessageBoxNew(m_pWidget, _( "You must restart Radiant for the "
                               "changes to take effect." ), _( "Restart Radiant" ), 
                               MB_OK | MB_ICONINFORMATION);
-        }
-
-        // if the view mode was switched to floating, set the Z window on by 
-        // default. this was originally intended as a bug fix, but the fix is 
-        // elsewhere .. anyway making sure we force Z on each time is good
-        // (and we simply hope there will be a SavePrefs before we die)
-        if((g_PrefsDlg.m_nView != nView) && 
-           ((EViewStyle)g_PrefsDlg.m_nView == (EViewStyle)eFloating)) {
-            g_PrefsDlg.m_bZVis = true;
         }
 
         if(m_pTexWnd) {
@@ -4977,24 +4808,6 @@ void MainFrame::OnToggleviewYz(){
 	}
 }
 
-void MainFrame::OnTogglez(){
-	if ( g_pParentWnd->FloatingGroupDialog() ) { // QE4 style
-		if ( m_pZWnd && m_pZWnd->m_pParent ) {
-			if ( gtk_widget_get_visible( m_pZWnd->m_pParent ) ) {
-				widget_delete_hide( m_pZWnd->m_pParent );
-			}
-			else{
-				gtk_widget_show( m_pZWnd->m_pParent );
-			}
-			g_PrefsDlg.m_bZVis ^= 1;
-			g_PrefsDlg.SavePrefs();
-		}
-	}
-	else {
-		Sys_FPrintf( SYS_WRN, "Z view toggle is only valid in floating views\n" );
-	}
-}
-
 void MainFrame::OnViewCenter(){
 	m_pCamWnd->Camera()->angles[ROLL] = m_pCamWnd->Camera()->angles[PITCH] = 0;
 	m_pCamWnd->Camera()->angles[YAW] = 22.5 * floor( ( m_pCamWnd->Camera()->angles[YAW] + 11 ) / 22.5 );
@@ -5138,27 +4951,6 @@ void MainFrame::OnViewZoomout(){
 	Sys_UpdateWindows( W_XY | W_XY_OVERLAY );
 }
 
-void MainFrame::OnViewZ100(){
-	z.scale = 1;
-	Sys_UpdateWindows( W_Z | W_Z_OVERLAY );
-}
-
-void MainFrame::OnViewZzoomin(){
-	z.scale *= 5.0 / 4;
-	if ( z.scale > 4 ) {
-		z.scale = 4;
-	}
-	Sys_UpdateWindows( W_Z | W_Z_OVERLAY );
-}
-
-void MainFrame::OnViewZzoomout(){
-	z.scale *= 4.0f / 5;
-	if ( z.scale < 0.125 ) {
-		z.scale = 0.125;
-	}
-	Sys_UpdateWindows( W_Z | W_Z_OVERLAY );
-}
-
 void MainFrame::OnViewCubein(){
 	g_PrefsDlg.m_nCubicScale--;
 	if ( g_PrefsDlg.m_nCubicScale < 1 ) {
@@ -5215,7 +5007,7 @@ void MainFrame::OnViewShowcoordinates(){
 	gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM( item ),
 									g_qeglobals.d_savedinfo.show_coordinates ? TRUE : FALSE );
 	g_bIgnoreCommands--;
-	Sys_UpdateWindows( W_XY | W_Z );
+	Sys_UpdateWindows( W_XY );
 }
 
 void MainFrame::OnViewShowOutline(){
@@ -5840,7 +5632,7 @@ void MainFrame::OnGrid( unsigned int nID ){
 		DoSnapTToGrid();
 	}
 
-	Sys_UpdateWindows( W_XY | W_Z );
+	Sys_UpdateWindows( W_XY );
 }
 
 void MainFrame::OnSnaptogrid(){
@@ -7248,13 +7040,13 @@ void MainFrame::OnCameraRight( bool keydown ){
 
 void MainFrame::OnCameraUp(){
 	m_pCamWnd->Camera()->origin[2] += SPEED_MOVE;
-	int nUpdate = ( g_PrefsDlg.m_bCamXYUpdate ) ? ( W_CAMERA | W_XY | W_Z ) : ( W_CAMERA );
+	int nUpdate = ( g_PrefsDlg.m_bCamXYUpdate ) ? ( W_CAMERA | W_XY ) : ( W_CAMERA );
 	Sys_UpdateWindows( nUpdate );
 }
 
 void MainFrame::OnCameraDown(){
 	m_pCamWnd->Camera()->origin[2] -= SPEED_MOVE;
-	int nUpdate = ( g_PrefsDlg.m_bCamXYUpdate ) ? ( W_CAMERA | W_XY | W_Z ) : ( W_CAMERA );
+	int nUpdate = ( g_PrefsDlg.m_bCamXYUpdate ) ? ( W_CAMERA | W_XY ) : ( W_CAMERA );
 	Sys_UpdateWindows( nUpdate );
 }
 
@@ -7318,7 +7110,7 @@ void MainFrame::OnCameraStraferight( bool keydown ){
 
 void MainFrame::OnGridToggle(){
 	g_qeglobals.d_showgrid = !g_qeglobals.d_showgrid;
-	Sys_UpdateWindows( W_XY | W_Z );
+	Sys_UpdateWindows( W_XY );
 }
 
 void MainFrame::OnViewCrosshair(){
@@ -7412,7 +7204,7 @@ void MainFrame::OnGridPrev(){
 	gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM( item ), TRUE );
 	g_bIgnoreCommands--;
 
-	Sys_UpdateWindows( W_XY | W_Z );
+	Sys_UpdateWindows( W_XY );
 }
 
 void MainFrame::OnGridNext(){
@@ -7461,7 +7253,7 @@ void MainFrame::OnGridNext(){
 	gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM( item ), TRUE );
 	g_bIgnoreCommands--;
 
-	Sys_UpdateWindows( W_XY | W_Z );
+	Sys_UpdateWindows( W_XY );
 }
 
 void MainFrame::OnSelectionMovedown(){
@@ -7475,7 +7267,7 @@ void MainFrame::OnSelectionMovedown(){
 	vAmt[0] = vAmt[1] = 0.0;
 	vAmt[2] = -g_qeglobals.d_gridsize;
 	Select_Move( vAmt );
-	Sys_UpdateWindows( W_CAMERA | W_XY | W_Z );
+	Sys_UpdateWindows( W_CAMERA | W_XY );
 
 	Undo_EndBrushList( &selected_brushes );
 	Undo_End();
@@ -7492,7 +7284,7 @@ void MainFrame::OnSelectionMoveup(){
 	vAmt[0] = vAmt[1] = 0.0;
 	vAmt[2] = g_qeglobals.d_gridsize;
 	Select_Move( vAmt );
-	Sys_UpdateWindows( W_CAMERA | W_XY | W_Z );
+	Sys_UpdateWindows( W_CAMERA | W_XY );
 
 	Undo_EndBrushList( &selected_brushes );
 	Undo_End();
@@ -7540,7 +7332,7 @@ void MainFrame::OnSelectAll(){
 
 void MainFrame::OnSelectionInvert(){
 	Select_Invert();
-	Sys_UpdateWindows( W_XY | W_Z | W_CAMERA );
+	Sys_UpdateWindows( W_XY | W_CAMERA );
 }
 
 

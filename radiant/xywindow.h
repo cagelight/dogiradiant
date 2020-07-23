@@ -89,7 +89,6 @@ void Clip();
 vec3_t& GetOrigin();
 void SetOrigin( vec3_t org );       // PGM
 void XY_Init();
-void XY_Overlay();
 void XY_Draw();
 void DrawZIcon();
 void DrawRotateIcon();

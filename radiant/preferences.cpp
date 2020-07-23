@@ -146,7 +146,6 @@
 #define STARTONPRIMMON_KEY      "StartOnPrimMon"
 #define NOSYSMENUPOPUPS_KEY     "NoSysMenuPopups"
 #define SNAPTTOGRID_KEY         "SnapTToGrid"
-#define FLOATINGZ_KEY           "FloatingZ"
 #define TARGETFIX_KEY           "TargetFix"
 #define GLPOINTWORKAROUND_KEY   "GlPointWorkaround"     // Gef: Workaround for broken Kyro * gl driver 25-aug-2001
 #define WHEELINC_KEY            "WheelMouseInc"
@@ -610,7 +609,6 @@ PrefsDlg::PrefsDlg (){
 	m_bFaceColors = FALSE;
 	m_bXZVis = FALSE;
 	m_bYZVis = FALSE;
-	m_bZVis = FALSE;
 	m_bSizePaint = FALSE;
 	m_bDLLEntities = FALSE;
 #ifdef _WIN32
@@ -660,7 +658,6 @@ PrefsDlg::PrefsDlg (){
 	m_bDoSleep = FALSE;
 	m_nSubdivisions = 4;
 	// not prefs
-	m_bFloatingZ = FALSE;
 #ifdef _WIN32
 	m_bNativeGUI = FALSE;
 	m_bStartOnPrimMon = FALSE;
@@ -2226,12 +2223,6 @@ void PrefsDlg::BuildDialog(){
 	gtk_widget_show( radio );
 	AddDialogData( radio, &m_nLatchedView, DLG_RADIO_INT );
 
-	// Floating Z window
-	check = gtk_check_button_new_with_label( _( "Floating Z Window" ) );
-	gtk_box_pack_start( GTK_BOX( vbox ), check, FALSE, FALSE, 0 );
-	gtk_widget_show( check );
-	AddDialogData( check, &m_bLatchedFloatingZ, DLG_CHECK_BOOL );
-
 	// show menu tear-off seperators
 	check = gtk_check_button_new_with_label( _( "Detachable Menus" ) );
 	gtk_box_pack_start( GTK_BOX( vbox ), check, FALSE, FALSE, 0 );
@@ -3008,7 +2999,6 @@ void PrefsDlg::LoadPrefs(){
 	mLocalPrefs.GetPref( FACECOLORS_KEY,         &m_bFaceColors,         FALSE );
 	mLocalPrefs.GetPref( XZVIS_KEY,              &m_bXZVis,              FALSE );
 	mLocalPrefs.GetPref( YZVIS_KEY,              &m_bYZVis,              FALSE );
-	mLocalPrefs.GetPref( ZVIS_KEY,               &m_bZVis,               FALSE );
 	mLocalPrefs.GetPref( SIZEPAINT_KEY,          &m_bSizePaint,                  FALSE );
 	mLocalPrefs.GetPref( DLLENTITIES_KEY,        &m_bDLLEntities,                FALSE );
 
@@ -3032,9 +3022,6 @@ void PrefsDlg::LoadPrefs(){
 
 	mLocalPrefs.GetPref( WINDOW_KEY,             (int*)&m_nLatchedView,  WINDOW_DEF );
 	m_nView = m_nLatchedView;
-
-	mLocalPrefs.GetPref( FLOATINGZ_KEY,          &m_bLatchedFloatingZ,           FALSE );
-	m_bFloatingZ = m_bLatchedFloatingZ;
 
 	mLocalPrefs.GetPref( TEXTUREQUALITY_KEY,     &m_nLatchedTextureQuality,             3 );
 	m_nTextureQuality = m_nLatchedTextureQuality;
@@ -3121,12 +3108,10 @@ void PrefsDlg::LoadPrefs(){
 	mLocalPrefs.GetPref( SURFACEWND_KEY,         &mWindowInfo.posSurfaceWnd,     default_window_pos );
 	mLocalPrefs.GetPref( ENTITYINFOWND_KEY,      &mWindowInfo.posEntityInfoWnd,  default_window_pos );
 
-	mLocalPrefs.GetPref( ZWIDTH_KEY,             &mWindowInfo.nZWidth,           30 );
 	mLocalPrefs.GetPref( XYHEIGHT_KEY,           &mWindowInfo.nXYHeight,         300 );
 	mLocalPrefs.GetPref( XYWIDTH_KEY,            &mWindowInfo.nXYWidth,          300 );
 	mLocalPrefs.GetPref( CAMWIDTH_KEY,           &mWindowInfo.nCamWidth,         200 );
 	mLocalPrefs.GetPref( CAMHEIGHT_KEY,          &mWindowInfo.nCamHeight,        200 );
-	mLocalPrefs.GetPref( ZFLOATWIDTH_KEY,        &mWindowInfo.nZFloatWidth,      300 );
 #ifdef _WIN32
 	mLocalPrefs.GetPref( STATE_KEY,              &mWindowInfo.nState,            SW_SHOW );
 #endif

@@ -722,13 +722,13 @@ void CamWnd::Cam_MouseMoved( int x, int y, int buttons ){
 
 	if ( ( m_bFreeMove && ( buttons & MK_CONTROL ) && !( buttons & MK_SHIFT ) ) || ( !m_bFreeMove && ( buttons == ( MK_RBUTTON | MK_CONTROL ) ) ) ) {
 		Cam_PositionDragNew();
-		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
+		Sys_UpdateWindows( W_XY | W_CAMERA );
 		return;
 	}
 	
 	if ( ( m_bFreeMove && ( buttons & MK_CONTROL ) && ( buttons & MK_SHIFT ) ) || ( !m_bFreeMove && ( buttons == ( MK_RBUTTON | MK_CONTROL | MK_SHIFT ) ) ) ) {
 		Cam_PositionDrag();
-		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
+		Sys_UpdateWindows( W_XY | W_CAMERA );
 		return;
 	}
 
@@ -737,7 +737,7 @@ void CamWnd::Cam_MouseMoved( int x, int y, int buttons ){
 	if ( buttons & ( MK_LBUTTON | MK_MBUTTON ) ) {
 		Drag_MouseMoved( x, y, buttons );
 		if ( g_qeglobals.d_select_mode != sel_area ) {
-			Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
+			Sys_UpdateWindows( W_XY | W_CAMERA );
 		}
 	}
 }

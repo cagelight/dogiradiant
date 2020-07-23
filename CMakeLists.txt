@@ -1008,8 +1008,6 @@ set( radiantFiles
 	"radiant/watchbsp.cpp"
 	"radiant/winding.cpp"
 	"radiant/xywindow.cpp"
-	"radiant/z.cpp"
-	"radiant/zwindow.cpp"
 )
 
 add_executable( radiant ${radiantFiles} )

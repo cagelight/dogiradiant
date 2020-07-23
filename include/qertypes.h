@@ -551,7 +551,7 @@ extern eclass_t    *eclass;
 #define W_CAMERA          0x0001
 #define W_XY                0x0002
 #define W_XY_OVERLAY    0x0004
-#define W_Z                 0x0008
+#define W_UNUSED1         0x0008
 #define W_TEXTURE         0x0010
 #define W_Z_OVERLAY     0x0020
 #define W_CONSOLE         0x0040

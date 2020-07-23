@@ -911,11 +911,6 @@ void QE_Init( void ){
 	FillTextureMenu( texdirs );
 	ClearGSList( texdirs );
 	FillBSPMenu();
-
-	/*
-	** other stuff
-	*/
-	Z_Init();
 }
 
 void WINAPI QE_ConvertDOSToUnixName( char *dst, const char *src ){

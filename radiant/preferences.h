@@ -466,11 +466,9 @@ typedef struct {
 	window_position_t posEntityInfoWnd;
 
 	int nXYHeight;
-	int nZWidth;
 	int nXYWidth;
 	int nCamWidth;
 	int nCamHeight;
-	int nZFloatWidth;
 	int nState;
 	int nTextureDirectoryListWidth;
 
@@ -620,7 +618,6 @@ bool m_bALTEdge;
 bool m_bFaceColors;
 bool m_bXZVis;
 bool m_bYZVis;
-bool m_bZVis;
 bool m_bSizePaint;
 bool m_bDLLEntities;
 bool m_bRotateLock;
@@ -667,8 +664,6 @@ bool m_bTexturesShaderlistOnly;
 int m_nSubdivisions;
 float m_fDefTextureScale;
 bool m_bCaulkNewBrushes;
-bool m_bFloatingZ;
-bool m_bLatchedFloatingZ;
 // Gef: Kyro GL_POINT workaround
 bool m_bGlPtWorkaround;
 

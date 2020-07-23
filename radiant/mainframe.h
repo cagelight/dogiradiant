@@ -24,7 +24,6 @@
 
 #include "xywindow.h"
 #include "texwindow.h"
-#include "zwindow.h"
 #include "camwindow.h"
 #include "watchbsp.h"
 
@@ -281,9 +280,9 @@ struct SKeyInfo
 #define ID_VIEW_ZOOMIN                  40061
 #define ID_VIEW_ZOOMOUT                 40062
 #define ID_VIEW_SHOWCOORDINATES         40063
-#define ID_VIEW_Z100                    40064
-#define ID_VIEW_ZZOOMIN                 40065
-#define ID_VIEW_ZZOOMOUT                40066
+#define ID_VIEW_UNUSED40064             40064
+#define ID_VIEW_UNUSED40065             40065
+#define ID_VIEW_UNUSED40066             40066
 #define ID_SELECTION_CLONE              40067
 #define ID_SELECTION_DESELECT           40068
 #define ID_SELECTION_DELETE             40069
@@ -344,7 +343,7 @@ struct SKeyInfo
 #define ID_MAPINFO                      40164
 #define ID_TOGGLECONSOLE                40165
 #define ID_TOGGLECAMERA                 40166
-#define ID_TOGGLEZ                      40167
+#define ID_UNUSED40167                  40167
 #define ID_TOGGLEVIEW                   40168
 #define ID_SELECTION_TEXTURE_FIT        40171
 #define ID_SELECTION_TEXTURE_ROTATECLOCK 40172
@@ -496,7 +495,6 @@ XYWnd* m_pYZWnd;
 XYWnd* m_pXZWnd;
 CamWnd* m_pCamWnd;
 TexWnd* m_pTexWnd;
-ZWnd* m_pZWnd;
 CWatchBSP* m_pWatchBSP;
 
 XYWnd* m_pActiveXY;
@@ -542,7 +540,6 @@ virtual ~MainFrame();
 XYWnd* GetXYWnd() {return m_pXYWnd; }
 XYWnd* GetXZWnd() {return m_pXZWnd; }
 XYWnd* GetYZWnd() {return m_pYZWnd; }
-ZWnd* GetZWnd() {return m_pZWnd; }
 CamWnd* GetCamWnd() {return m_pCamWnd; }
 TexWnd* GetTexWnd() {return m_pTexWnd; }
 CWatchBSP *GetWatchBSP() { return m_pWatchBSP; }
@@ -630,11 +627,8 @@ void OnViewShowworld();
 void OnViewTexture();
 void OnViewUpfloor();
 void OnViewXy();
-void OnViewZ100();
 void OnViewZoomin();
 void OnViewZoomout();
-void OnViewZzoomin();
-void OnViewZzoomout();
 void OnViewSide();
 void OnTexturesShowinuse();
 void OnTexturesInspector();
@@ -717,7 +711,6 @@ void OnPrefs();
 void OnTogglecamera();
 void OnToggleconsole();
 void OnToggleview();
-void OnTogglez();
 void OnToggleLock();
 void OnEditMapinfo();
 void OnEditEntityinfo();

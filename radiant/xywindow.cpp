@@ -665,83 +665,6 @@ vec3_t& XYWnd::RotateOrigin(){
 	return g_vRotateOrigin;
 }
 
-/*
-   ==============
-   XY_Overlay
-   ==============
- */
-void XYWnd::XY_Overlay(){
-	int w, h;
-	int r[4];
-	static vec3_t lastz;
-	static vec3_t lastcamera;
-
-	qglViewport( 0, 0, m_nWidth, m_nHeight );
-
-	//
-	// set up viewpoint
-	//
-	qglMatrixMode( GL_PROJECTION );
-	qglLoadIdentity();
-
-	w = (int)( m_nWidth / 2 / m_fScale );
-	h = (int)( m_nHeight / 2 / m_fScale );
-
-	qglOrtho( m_vOrigin[0] - w, m_vOrigin[0] + w, m_vOrigin[1] - h, m_vOrigin[1] + h, g_MinWorldCoord, g_MaxWorldCoord );
-	//
-	// erase the old camera and z checker positions
-	// if the entire xy hasn't been redrawn
-	//
-	if ( m_bDirty ) {
-		qglReadBuffer( GL_BACK );
-		qglDrawBuffer( GL_FRONT );
-
-		qglRasterPos2f( lastz[0] - 9, lastz[1] - 9 );
-		qglGetIntegerv( GL_CURRENT_RASTER_POSITION,r );
-		qglCopyPixels( r[0], r[1], 18,18, GL_COLOR );
-
-		qglRasterPos2f( lastcamera[0] - 50, lastcamera[1] - 50 );
-		qglGetIntegerv( GL_CURRENT_RASTER_POSITION,r );
-		qglCopyPixels( r[0], r[1], 100,100, GL_COLOR );
-	}
-	m_bDirty = true;
-
-	//
-	// save off underneath where we are about to draw
-	//
-	VectorCopy( z.origin, lastz );
-	VectorCopy( g_pParentWnd->GetCamWnd()->Camera()->origin, lastcamera );
-
-	qglReadBuffer( GL_FRONT );
-	qglDrawBuffer( GL_BACK );
-
-	qglRasterPos2f( lastz[0] - 9, lastz[1] - 9 );
-	qglGetIntegerv( GL_CURRENT_RASTER_POSITION,r );
-	qglCopyPixels( r[0], r[1], 18,18, GL_COLOR );
-
-	qglRasterPos2f( lastcamera[0] - 50, lastcamera[1] - 50 );
-	qglGetIntegerv( GL_CURRENT_RASTER_POSITION,r );
-	qglCopyPixels( r[0], r[1], 100,100, GL_COLOR );
-
-	//
-	// draw the new icons
-	//
-	qglDrawBuffer( GL_FRONT );
-
-	qglShadeModel( GL_FLAT );
-	qglDisable( GL_TEXTURE_2D );
-	qglDisable( GL_TEXTURE_1D );
-	qglDisable( GL_DEPTH_TEST );
-	qglDisable( GL_BLEND );
-	qglColor3f( 0, 0, 0 );
-
-	DrawCameraIcon();
-	DrawZIcon();
-
-	qglDrawBuffer( GL_BACK );
-	qglFinish();
-}
-
 vec3_t& XYWnd::GetOrigin(){
 	return m_vOrigin;
 }
@@ -1405,20 +1328,7 @@ void XYWnd::XY_MouseDown( int x, int y, int buttons ){
 		else
 		{
 			SnapToPoint( x, y, point );
-			if ( m_nViewType == XY ) {
-				z.origin[0] = point[0];
-				z.origin[1] = point[1];
-			}
-			else if ( m_nViewType == YZ ) {
-				z.origin[0] = point[1];
-				z.origin[1] = point[2];
-			}
-			else
-			{
-				z.origin[0] = point[0];
-				z.origin[1] = point[2];
-			}
-			Sys_UpdateWindows( W_XY_OVERLAY | W_Z );
+			Sys_UpdateWindows( W_XY_OVERLAY );
 			return;
 		}
 	}
@@ -1764,7 +1674,7 @@ void XYWnd::XY_MouseMoved( int x, int y, int buttons ){
 	if ( m_nButtonstate & MK_LBUTTON ) {
 		Drag_MouseMoved( x, y, buttons );
 		if ( g_qeglobals.d_select_mode != sel_area ) {
-			Sys_UpdateWindows( W_XY_OVERLAY | W_CAMERA_IFON | W_Z );
+			Sys_UpdateWindows( W_XY_OVERLAY | W_CAMERA_IFON );
 		}
 		return;
 	}
@@ -1789,24 +1699,7 @@ void XYWnd::XY_MouseMoved( int x, int y, int buttons ){
 			Sys_UpdateWindows( W_XY );
 			return;
 		}
-		else
-		{
-			SnapToPoint( x, y, point );
-			if ( m_nViewType == XY ) {
-				z.origin[0] = point[0];
-				z.origin[1] = point[1];
-			}
-			else if ( m_nViewType == YZ ) {
-				z.origin[0] = point[1];
-				z.origin[1] = point[2];
-			}
-			else
-			{
-				z.origin[0] = point[0];
-				z.origin[1] = point[2];
-			}
-		}
-		Sys_UpdateWindows( W_XY_OVERLAY | W_Z );
+		Sys_UpdateWindows( W_XY_OVERLAY );
 		return;
 	}
 
@@ -2620,43 +2513,6 @@ void XYWnd::DrawCameraIcon(){
 
 }
 
-void XYWnd::DrawZIcon( void ){
-	if ( m_nViewType == XY ) {
-		float x = z.origin[0];
-		float y = z.origin[1];
-		float zdim = 8 / m_fScale;
-		qglEnable( GL_BLEND );
-		qglDisable( GL_TEXTURE_2D );
-		qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-		qglDisable( GL_CULL_FACE );
-		qglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		qglColor4f( 0.0, 0.0, 1.0, 0.25 );
-		qglBegin( GL_QUADS );
-		qglVertex3f( x - zdim,y - zdim,0 );
-		qglVertex3f( x + zdim,y - zdim,0 );
-		qglVertex3f( x + zdim,y + zdim,0 );
-		qglVertex3f( x - zdim,y + zdim,0 );
-		qglEnd();
-		qglDisable( GL_BLEND );
-
-		qglColor4f( 0.0, 0.0, 1.0, 1 );
-
-		qglBegin( GL_LINE_LOOP );
-		qglVertex3f( x - zdim,y - zdim,0 );
-		qglVertex3f( x + zdim,y - zdim,0 );
-		qglVertex3f( x + zdim,y + zdim,0 );
-		qglVertex3f( x - zdim,y + zdim,0 );
-		qglEnd();
-
-		qglBegin( GL_LINE_STRIP );
-		qglVertex3f( x - ( zdim / 2 ),y + ( zdim / 2 ),0 );
-		qglVertex3f( x + ( zdim / 2 ),y + ( zdim / 2 ),0 );
-		qglVertex3f( x - ( zdim / 2 ),y - ( zdim / 2 ),0 );
-		qglVertex3f( x + ( zdim / 2 ),y - ( zdim / 2 ),0 );
-		qglEnd();
-	}
-}
-
 // can be greatly simplified but per usual i am in a hurry
 // which is not an excuse, just a fact
 void XYWnd::PaintSizeInfo( int nDim1, int nDim2, vec3_t vMinBounds, vec3_t vMaxBounds ){
@@ -3099,7 +2955,6 @@ void XYWnd::XY_Draw(){
 	// now draw camera point
 	//
 	DrawCameraIcon();
-	DrawZIcon();
 
 	if ( RotateMode() ) {
 		DrawRotateIcon();

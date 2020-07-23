@@ -126,7 +126,6 @@ extern vec_t g_MaxBrushSize;
 #include "select.h"
 
 #include "camera.h"
-#include "z.h"
 
 #include "undo.h"
 #include "glwidget.h"
@@ -849,7 +848,6 @@ extern void RunScriptByName( char*, bool );
 extern void DoNewColor( int* i1, int* i2, int* i3 );
 extern void UpdateSurfaceDialog();
 extern void CSG_SplitBrushByFace( brush_t *in, face_t *f, brush_t **front, brush_t **back );
-extern z_t z;
 extern void Select_Scale( float x, float y, float z );
 extern void TextureAxisFromPlane( plane_t *pln, vec3_t xv, vec3_t yv );
 extern qboolean QE_SaveProject( const char* pProjectFile );
