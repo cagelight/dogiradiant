@@ -127,7 +127,7 @@ bool CSynapseServer::Initialize( const char* conf_file, PFN_SYN_PRINTF_VA pf ){
 		}
 	}
 
-	for ( list<char *>::iterator iPath = mSearchPaths.begin(); iPath != mSearchPaths.end(); iPath++ )
+	for ( std::list<char *>::iterator iPath = mSearchPaths.begin(); iPath != mSearchPaths.end(); iPath++ )
 	{
 		const char* path = *iPath;
 
@@ -291,7 +291,7 @@ PFN_SYN_PRINTF_VA CSynapseServer::Get_Syn_Printf(){
 }
 
 void CSynapseServer::TryPushStack( APIDescriptor_t *pAPI ){
-	list<APIDescriptor_t*>::iterator iAPI;
+	std::list<APIDescriptor_t*>::iterator iAPI;
 	for ( iAPI = mStack.begin(); iAPI != mStack.end(); iAPI++ )
 	{
 		if ( ( *iAPI ) == pAPI ) {
@@ -302,7 +302,7 @@ void CSynapseServer::TryPushStack( APIDescriptor_t *pAPI ){
 	mbStackChanged = true;
 }
 
-list<CSynapseClientSlot>::iterator CSynapseServer::ShutdownClient( list<CSynapseClientSlot>::iterator iSlot ){
+std::list<CSynapseClientSlot>::iterator CSynapseServer::ShutdownClient( std::list<CSynapseClientSlot>::iterator iSlot ){
 	CSynapseClientSlot *pClientSlot = &( *iSlot );
 	if ( pClientSlot->mpClient->IsActive() ) {
 		// this should not happen except during core shutdown (i.e. editor is shutting down)
@@ -315,7 +315,7 @@ list<CSynapseClientSlot>::iterator CSynapseServer::ShutdownClient( list<CSynapse
 	{
 		APIDescriptor_t *pAPI = pClientSlot->mpClient->GetAPIDescriptor( i );
 		// search this API in mStack
-		list< APIDescriptor_t *>::iterator iStack = mStack.begin();
+		std::list< APIDescriptor_t *>::iterator iStack = mStack.begin();
 		while ( iStack != mStack.end() )
 		{
 			if ( *iStack == pAPI ) {
@@ -328,7 +328,7 @@ list<CSynapseClientSlot>::iterator CSynapseServer::ShutdownClient( list<CSynapse
 				if ( pAPI->mbTableInitDone ) {
 					// even if non active, some SYN_REQUIRE may have been filled up
 					// look for the corresponding SYN_PROVIDE and decref
-					list< APIDescriptor_t *>::iterator iStackRequire = mStack.begin();
+					std::list< APIDescriptor_t *>::iterator iStackRequire = mStack.begin();
 					APIDescriptor_t *pMatchAPI;
 					while ( iStackRequire != mStack.end() )
 					{
@@ -401,7 +401,7 @@ void CSynapseServer::PushRequired( CSynapseClient *pClient ){
 	{
 		CSynapseAPIManager *pManager = pClient->GetManagerMatch( i );
 		// start matching all known SYN_PROVIDE APIs against this manager
-		list<CSynapseClientSlot>::iterator iClientSlot;
+		std::list<CSynapseClientSlot>::iterator iClientSlot;
 		for ( iClientSlot = mClients.begin(); iClientSlot != mClients.end(); iClientSlot++ )
 		{
 			CSynapseClient *pScanClient = ( *iClientSlot ).
@@ -429,7 +429,7 @@ void CSynapseServer::PushRequired( CSynapseClient *pClient ){
 int CSynapseServer::FindActiveMajorClient( const char * major, APIDescriptor_t ** ret ) const {
     Syn_Printf( "checking if we have a single active client for major \"%s\"\n", major );
     *ret = NULL;
-    list<CSynapseClientSlot>::const_iterator iClient;
+    std::list<CSynapseClientSlot>::const_iterator iClient;
     for ( iClient = mClients.begin(); iClient != mClients.end(); iClient++ ) {
         CSynapseClient *pClient = ( *iClient ).mpClient;
         if ( !pClient->IsActive() ) {
@@ -508,7 +508,7 @@ int CSynapseServer::MatchAPI( const char* major1, const char* minor1, const char
 bool CSynapseServer::ResolveAPI( APIDescriptor_t* pAPI ){
 	//Syn_Printf("In ResolveAPI %s %p '%s' '%s'\n", APITypeName[pAPI->mType], pAPI, pAPI->major_name, pAPI->minor_name);
 	// loop through active clients, search for a client providing what we are looking for
-	list<CSynapseClientSlot>::iterator iClient;
+	std::list<CSynapseClientSlot>::iterator iClient;
 	for ( iClient = mClients.begin(); iClient != mClients.end(); iClient++ )
 	{
 		// walk through interfaces on this client for a match
@@ -558,7 +558,7 @@ bool CSynapseServer::ResolveAPI( APIDescriptor_t* pAPI ){
 }
 
 bool CSynapseServer::DoResolve( CSynapseClient *pClient ){
-	list<CSynapseClientSlot>::iterator iSlot;
+	std::list<CSynapseClientSlot>::iterator iSlot;
 	for ( iSlot = mClients.begin(); iSlot != mClients.end(); iSlot++ )
 	{
 		if ( ( *iSlot ).mpClient == pClient ) {
@@ -586,7 +586,7 @@ bool CSynapseServer::DoResolve( CSynapseClient *pClient ){
 	// start resolving now
 	// working till the stack is emptied or till we reach a dead end situation
 	// we do a depth first traversal, we will grow the interface stack to be resolved till we start finding solutions
-	list<APIDescriptor_t*>::iterator iCurrent;
+	std::list<APIDescriptor_t*>::iterator iCurrent;
 	mbStackChanged = true; // init to true so we try the first elem
 	while ( !mStack.empty() )
 	{
@@ -620,7 +620,7 @@ bool CSynapseServer::DoResolve( CSynapseClient *pClient ){
 
 bool CSynapseServer::Resolve( CSynapseClient *pClient ){
 	bool ret = DoResolve( pClient );
-	list<CSynapseClientSlot>::iterator iClient;
+	std::list<CSynapseClientSlot>::iterator iClient;
 	iClient = mClients.begin();
 	while ( iClient != mClients.end() )
 	{
@@ -640,7 +640,7 @@ void CSynapseServer::Shutdown(){
 	Syn_Printf( "Synapse server core is shutting down\n" );
 	// do a first pass to shutdown the clients nicely (i.e. decref, release memory and drop everything)
 	// we seperate the client shutdown calls from the dlclose cause that part is a clean decref / free situation whereas dlclose will break links without advice
-	list<CSynapseClientSlot>::iterator iClient;
+	std::list<CSynapseClientSlot>::iterator iClient;
 	iClient = mClients.begin();
 	for ( iClient = mClients.begin(); iClient != mClients.end(); iClient++ )
 	{
@@ -655,7 +655,7 @@ void CSynapseServer::Shutdown(){
 }
 
 void CSynapseServer::DumpStack(){
-	list<APIDescriptor_t*>::iterator iCurrent;
+	std::list<APIDescriptor_t*>::iterator iCurrent;
 	for ( iCurrent = mStack.begin(); iCurrent != mStack.end(); iCurrent++ )
 	{
 		APIDescriptor_t*pAPI = *iCurrent;
@@ -664,7 +664,7 @@ void CSynapseServer::DumpStack(){
 }
 
 void CSynapseServer::DumpActiveClients(){
-	list<CSynapseClientSlot>::iterator iClient;
+	std::list<CSynapseClientSlot>::iterator iClient;
 	for ( iClient = mClients.begin(); iClient != mClients.end(); iClient++ )
 	{
 		CSynapseClient *pClient = ( *iClient ).mpClient;
@@ -758,7 +758,7 @@ bool CSynapseServer::GetConfigForAPI( const char *api, char **minor ) {
 }
 
 const char *CSynapseServer::GetModuleFilename( CSynapseClient *pClient ){
-	list<CSynapseClientSlot>::iterator iSlot;
+	std::list<CSynapseClientSlot>::iterator iSlot;
 	for ( iSlot = mClients.begin(); iSlot != mClients.end(); iSlot++ )
 	{
 		if ( ( *iSlot ).mpClient == pClient ) {
@@ -784,7 +784,7 @@ CSynapseClient::CSynapseClient(){
 }
 
 void CSynapseClient::Shutdown(){
-	vector<APIDescriptor_t *>::iterator iAPI;
+	std::vector<APIDescriptor_t *>::iterator iAPI;
 	for ( iAPI = mAPIDescriptors.begin(); iAPI != mAPIDescriptors.end(); iAPI++ )
 	{
 		APIDescriptor_t *pAPI = *iAPI;
@@ -796,7 +796,7 @@ void CSynapseClient::Shutdown(){
 		*iAPI = NULL;
 	}
 	mAPIDescriptors.clear();
-	vector<CSynapseAPIManager *>::iterator iManager;
+	std::vector<CSynapseAPIManager *>::iterator iManager;
 	for ( iManager = mManagersList.begin(); iManager != mManagersList.end(); iManager++ )
 	{
 		CSynapseAPIManager *pManager = *iManager;
@@ -920,7 +920,7 @@ bool CSynapseClient::CheckSetActive(){
 		}
 	}
 	// if we have managers with fixed list, those need to be completely filled in too
-	vector<CSynapseAPIManager *>::iterator iManager;
+	std::vector<CSynapseAPIManager *>::iterator iManager;
 	for ( iManager = mManagersList.begin(); iManager != mManagersList.end(); iManager++ )
 	{
 		if ( !( *iManager )->CheckSetActive() ) {
@@ -987,7 +987,7 @@ APIDescriptor_t * CSynapseClient::FindProvidesMajor( const char * major ) const 
 }
 
 CSynapseAPIManager::~CSynapseAPIManager(){
-	vector<APIDescriptor_t *>::iterator iAPI;
+	std::vector<APIDescriptor_t *>::iterator iAPI;
 	for ( iAPI = mAPIs.begin(); iAPI != mAPIs.end(); iAPI++ )
 	{
 		APIDescriptor_t *pAPI = *iAPI;
@@ -1034,7 +1034,7 @@ bool CSynapseAPIManager::MatchAPI( const char *major, const char *minor ){
 	/*!
 	   if this interface has been allocated already, avoid requesting it again..
 	 */
-	vector<APIDescriptor_t *>::iterator iAPI;
+	std::vector<APIDescriptor_t *>::iterator iAPI;
 	for ( iAPI = mAPIs.begin(); iAPI != mAPIs.end(); iAPI++ )
 	{
 		if ( CSynapseServer::MatchAPI( ( *iAPI )->major_name, ( *iAPI )->minor_name, major, minor ) ) {
