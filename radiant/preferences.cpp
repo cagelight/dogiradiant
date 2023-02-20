@@ -1185,9 +1185,7 @@ void CGameDialog::ScanForGames(){
 	CString strPath;
 	char *dirlist;
 	GDir *dir;
-	CString strGamesPath = g_strAppPath.GetBuffer();
-	strGamesPath += "games";
-	const char *path = strGamesPath.GetBuffer();
+	const char *path = g_strGamesPath.GetBuffer();
 
 	if ( !mGames.empty() ) {
 		Sys_Printf( "Clearing game list\n" );
@@ -3544,8 +3542,7 @@ void CGameInstall::Run() {
 	Sys_Printf( "combo: %d name: %s engine: %s mod: %s\n", m_nComboSelect, m_strName.GetBuffer(), m_strEngine.GetBuffer(), m_strMod.GetBuffer() );
 
 	// Resolve the game pack and .game file
-	Str gamePack, gameFilePath = g_strAppPath.GetBuffer();
-	gameFilePath += "games/";
+	Str gamePack, gameFilePath = g_strGamesPath.GetBuffer();
 	if ( CheckFile( gameFilePath ) != PATH_DIRECTORY ) {
 		radCreateDirectory( gameFilePath );
 	}
