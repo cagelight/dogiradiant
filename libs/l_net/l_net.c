@@ -36,6 +36,8 @@
 #include "l_net.h"
 #include "l_net_wins.h"
 
+#include <strings.h>
+
 #define GetMemory malloc
 #define FreeMemory free
 

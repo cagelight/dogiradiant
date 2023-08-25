@@ -611,11 +611,7 @@ PrefsDlg::PrefsDlg (){
 	m_bYZVis = FALSE;
 	m_bSizePaint = FALSE;
 	m_bDLLEntities = FALSE;
-#ifdef _WIN32
-	m_bDetachableMenus = FALSE; // Most win32 users will find detachable menus annoying
-#else
-	m_bDetachableMenus = TRUE;  // Linux/Apple users are used to them...
-#endif
+	m_bDetachableMenus = FALSE;
 	m_bPatchToolbar = TRUE;
 	m_bWideToolbar = TRUE;
 	m_bPluginToolbar = TRUE;
@@ -624,7 +620,7 @@ PrefsDlg::PrefsDlg (){
 	m_strUserPath = "";
 	m_nRotation = 0;
 	m_bChaseMouse = FALSE;
-        m_bMousewheelZoom = FALSE;
+	m_bMousewheelZoom = FALSE;
 	m_bTextureScrollbar = TRUE;
 	m_bDisplayLists = TRUE;
 	m_bAntialiasedPointsAndLines = FALSE; // Fishman - Add antialiazed points and lines support. 09/03/00
@@ -636,8 +632,7 @@ PrefsDlg::PrefsDlg (){
 	m_bSelectModels = TRUE;
 	m_nEntityShowState = ENTITY_SKINNED_BOXED;
 	m_bFixedTextureSize = TRUE;
-	m_nFixedTextureSizeWidth = 64;
-	m_nFixedTextureSizeHeight = 64;
+	m_nFixedTextureSize = 128;
 	m_nTextureScale = 2;
 	m_bSwitchClip = FALSE;
 	m_bSelectWholeEntities = TRUE;
@@ -890,7 +885,7 @@ CGameDescription::CGameDescription( xmlDocPtr pDoc, const Str &GameFile ){
                 default_scale = NULL;
 	}
 	else{
-		mTextureDefaultScale = 0.5f;
+		mTextureDefaultScale = 0.2f;
 	}
 	xmlChar* eclass_singleload = xmlGetProp( pNode, (const xmlChar*)"eclass_singleload" );
 	if ( eclass_singleload ) {
@@ -1552,7 +1547,7 @@ void PrefsDlg::BuildDialog(){
 	// Main Preferences dialog
 	GtkWidget *dialog, *mainvbox, *hbox, *sc_win, *preflabel;
 
-	GtkWidget *ftw_label, *fth_label;
+	GtkWidget *ftw_label;
 	// Widgets on notebook pages
 	GtkWidget *check, *label, *scale, *hbox2, *combo,
 	*table, *spin,  *entry, *pixmap,
@@ -1990,7 +1985,7 @@ void PrefsDlg::BuildDialog(){
 	gtk_widget_show( label );
 
 	// texture subsets
-	check = gtk_check_button_new_with_label( _( "Texture subsets" ) );
+	check = gtk_check_button_new_with_label( _( "Texture searchbar" ) );
 	gtk_box_pack_start( GTK_BOX( vbox ), check, FALSE, FALSE, 0 );
 	gtk_widget_show( check );
 	AddDialogData( check, &m_bTextureWindow, DLG_CHECK_BOOL );
@@ -2106,37 +2101,20 @@ void PrefsDlg::BuildDialog(){
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox2, FALSE, FALSE, 0 );
 	gtk_widget_show( hbox2 );
 
-	ftw_label = label = gtk_label_new( _( "Fixed Texture Width" ) );
+	ftw_label = label = gtk_label_new( _( "Fixed Texture Size" ) );
 	gtk_box_pack_start( GTK_BOX( hbox2 ), label, FALSE, FALSE, 0 );
 	gtk_misc_set_alignment( GTK_MISC( label ), 0.0, 0.0 );
 	gtk_widget_show( label );
 
-	spin = gtk_spin_button_new( GTK_ADJUSTMENT( gtk_adjustment_new( 1, 1, 1024, 1, 10, 0 ) ), 1, 0 );
+	spin = gtk_spin_button_new( GTK_ADJUSTMENT( gtk_adjustment_new( 64, 64, 1024, 64, 10, 0 ) ), 1, 0 );
 	gtk_spin_button_set_numeric( GTK_SPIN_BUTTON( spin ), TRUE );
 	g_object_set( spin, "xalign", 1.0, (char*)NULL );
 	gtk_box_pack_start( GTK_BOX( hbox2 ), spin, FALSE, FALSE, 0 );
 	gtk_widget_show( spin );
-	AddDialogData( spin, &m_nFixedTextureSizeWidth, DLG_SPIN_INT );
-
-	hbox2 = gtk_hbox_new( FALSE, 5 );
-	gtk_box_pack_start( GTK_BOX( vbox ), hbox2, FALSE, FALSE, 0 );
-	gtk_widget_show( hbox2 );
-
-	fth_label = label = gtk_label_new( _( "Fixed Texture Height" ) );
-	gtk_box_pack_start( GTK_BOX( hbox2 ), label, FALSE, FALSE, 0 );
-	gtk_misc_set_alignment( GTK_MISC( label ), 0.0, 0.0 );
-	gtk_widget_show( label );
-
-	spin = gtk_spin_button_new( GTK_ADJUSTMENT( gtk_adjustment_new( 1, 1, 1024, 1, 10, 0 ) ), 1, 0 );
-	gtk_spin_button_set_numeric( GTK_SPIN_BUTTON( spin ), TRUE );
-	g_object_set( spin, "xalign", 1.0, (char*)NULL );
-	gtk_box_pack_start( GTK_BOX( hbox2 ), spin, FALSE, FALSE, 0 );
-	gtk_widget_show( spin );
-	AddDialogData( spin, &m_nFixedTextureSizeHeight, DLG_SPIN_INT );
+	AddDialogData( spin, &m_nFixedTextureSize, DLG_SPIN_INT );
 
 	size_group = gtk_size_group_new( GTK_SIZE_GROUP_HORIZONTAL );
 	gtk_size_group_add_widget( size_group, ftw_label );
-	gtk_size_group_add_widget( size_group, fth_label );
 	g_object_unref( size_group );
 	check = gtk_check_button_new_with_label( _( "Show Texture Directory List" ) );
 	gtk_box_pack_start( GTK_BOX( vbox ), check, FALSE, FALSE, 0 );
@@ -2330,7 +2308,7 @@ void PrefsDlg::BuildDialog(){
 	gtk_widget_show( hbox2 );
 
 	// label
-	label = gtk_label_new( _( "Wheel Mouse inc:" ) );
+	label = gtk_label_new( _( "Wheel Mouse increment:" ) );
 	gtk_misc_set_alignment( GTK_MISC( label ), 0.0, 0.5 );
 	gtk_box_pack_start( GTK_BOX( hbox2 ), label, FALSE, FALSE, 0 );
 	gtk_widget_show( label );
@@ -2434,7 +2412,7 @@ void PrefsDlg::BuildDialog(){
 	gtk_widget_show( label );
 
 	// spinner (allows undo levels to be set to zero)
-	spin = gtk_spin_button_new( GTK_ADJUSTMENT( gtk_adjustment_new( 1, 0, 64, 1, 10, 0 ) ), 1, 0 );
+	spin = gtk_spin_button_new( GTK_ADJUSTMENT( gtk_adjustment_new( 1, 0, 512, 1, 10, 0 ) ), 1, 0 );
 	gtk_spin_button_set_numeric( GTK_SPIN_BUTTON( spin ), TRUE );
 	gtk_entry_set_alignment( GTK_ENTRY( spin ), 1.0 ); //right
 	gtk_table_attach( GTK_TABLE( table ), spin, 1, 2, 1, 2,
@@ -2994,7 +2972,7 @@ void PrefsDlg::LoadPrefs(){
 	mLocalPrefs.GetPref( CAMDISCRETE_KEY,        &m_bCamDiscrete,        TRUE );
 	mLocalPrefs.GetPref( LIGHTDRAW_KEY,          &m_bNewLightDraw,       TRUE );
 	mLocalPrefs.GetPref( CUBICCLIP_KEY,          &m_bCubicClipping,      FALSE );
-	mLocalPrefs.GetPref( CUBICSCALE_KEY,         &m_nCubicScale,         13 );
+	mLocalPrefs.GetPref( CUBICSCALE_KEY,         &m_nCubicScale,         32 );
 	mLocalPrefs.GetPref( ALTEDGE_KEY,            &m_bALTEdge,            FALSE );
 	mLocalPrefs.GetPref( FACECOLORS_KEY,         &m_bFaceColors,         FALSE );
 	mLocalPrefs.GetPref( XZVIS_KEY,              &m_bXZVis,              FALSE );
@@ -3026,13 +3004,12 @@ void PrefsDlg::LoadPrefs(){
 	mLocalPrefs.GetPref( TEXTUREQUALITY_KEY,     &m_nLatchedTextureQuality,             3 );
 	m_nTextureQuality = m_nLatchedTextureQuality;
 
-	mLocalPrefs.GetPref( LOADSHADERS_KEY,        &m_nLatchedShader,                     0 );
+	mLocalPrefs.GetPref( LOADSHADERS_KEY,        &m_nLatchedShader,                     1 );
 	m_nShader = m_nLatchedShader;
 
 
 	mLocalPrefs.GetPref( FIXEDTEXSIZE_KEY,       &m_bFixedTextureSize,          FALSE );
-	mLocalPrefs.GetPref( FIXEDTEXSIZEWIDTH_KEY,  &m_nFixedTextureSizeWidth,     64 );
-	mLocalPrefs.GetPref( FIXEDTEXSIZEHEIGHT_KEY, &m_nFixedTextureSizeHeight,    64 );
+	mLocalPrefs.GetPref( FIXEDTEXSIZEWIDTH_KEY,  &m_nFixedTextureSize,     128 );
 
 	mLocalPrefs.GetPref( SHOWTEXDIRLIST_KEY,     &m_bShowTexDirList,             TRUE );
 
@@ -3050,15 +3027,12 @@ void PrefsDlg::LoadPrefs(){
 	if ( ( g_pGameDescription->mGameFile == "hl.game" ) ) {
 		// No BSP monitoring in the default compiler tools for Half-life (yet)
 		mLocalPrefs.GetPref( WATCHBSP_KEY,           &m_bWatchBSP,                   FALSE );
-
-		// Texture subset on by default (HL specific really, because of halflife.wad's size)
-		mLocalPrefs.GetPref( TEXTURE_KEY,            &m_bTextureWindow,              TRUE );
 	} else {
 		mLocalPrefs.GetPref( WATCHBSP_KEY,           &m_bWatchBSP,                   TRUE );
-		mLocalPrefs.GetPref( TEXTURE_KEY,            &m_bTextureWindow,              FALSE );
 	}
 
 
+	mLocalPrefs.GetPref( TEXTURE_KEY,            &m_bTextureWindow,              TRUE );
 	mLocalPrefs.GetPref( TEXTURESCROLLBAR_KEY,   &m_bTextureScrollbar,           TRUE );
 	mLocalPrefs.GetPref( DISPLAYLISTS_KEY,       &m_bDisplayLists,               TRUE );
 	mLocalPrefs.GetPref( ANTIALIASEDLINES_KEY,   &m_bAntialiasedPointsAndLines,  FALSE );
@@ -3158,9 +3132,9 @@ void PrefsDlg::LoadPrefs(){
 
 
 	vec3_t vDefaultAxisColours[3] = {
-		{0.f, 0.5f, 0.f},
-		{0.f, 0.f, 1.f},
-		{1.f, 0.f, 0.f},
+		{0.3f,  1.0f,   0.3f},
+		{0.3f,  0.3f,   1.0f},
+		{1.0f,  0.3f,   0.3f},
 	};
 
 	for ( i = 0; i < 3; i++ ) {
@@ -3171,20 +3145,21 @@ void PrefsDlg::LoadPrefs(){
 
 	vec3_t vDefaultColours[COLOR_LAST] = {
 		{0.25f, 0.25f,  0.25f},
-		{1.f,   1.f,    1.f},
-		{0.75f, 0.75f,  0.75f},
-		{0.5f,  0.5f,   0.5f},
+		{0.2f,  0.2f,   0.2f},
+		{0.3f,  0.3f,   0.3f},
+		{0.35f, 0.45f,  0.475f},
 		{0.25f, 0.25f,  0.25f},
-		{0.0f,  0.0f,   0.0f},
-		{0.f,   0.f,    1.f},
-		{0.f,   0.f,    0.f},
-		{0.f,   0.f,    0.f},
-		{1.f,   0.f,    0.f},
-		{0.f,   0.f,    1.f},
-		{0.5f,  0.f,    0.75f},
-		{1.0f,  0.f,    0.f},
-		{0.f,   0.f,    0.f},
-		{0.f,   0.f,    0.f},
+		{0.7f,  0.7f,   1.0f},
+		{0.0f,  0.0f,   1.0f},
+		{1.0f,  1.0f,   1.0f},
+		{0.7f,  0.7f,   0.7f},
+		{1.0f,  0.2f,   0.1f},
+		{0.2f,  0.2f,   1.0f},
+		{0.5f,  0.0f,   0.75f},
+		{1.0f,  0.2f,   0.1f},
+		{0.24f, 0.24f,  0.24f},
+		{0.4f,  0.4f,   0.4f},
+		{0.6f,  0.6f,   0.6f}
 	};
 
 	for ( i = 0; i < COLOR_LAST; i++ ) {

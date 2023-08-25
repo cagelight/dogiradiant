@@ -21,8 +21,8 @@ endif()
 ENABLE_LANGUAGE( C )
 ENABLE_LANGUAGE( CXX )
 
-set( CMAKE_C_FLAGS   "-fPIC -std=c11" )
-set( CMAKE_CXX_FLAGS "-fPIC -std=c++11" )
+set( CMAKE_C_FLAGS   "-fPIC -std=gnu11 -Werror=implicit-function-declaration" )
+set( CMAKE_CXX_FLAGS "-fPIC -std=c++14 -Wno-parentheses" )
 
 set( CMAKE_C_FLAGS_DEBUG   "-Wall -Og -march=core2 -mtune=native -ggdb3" )
 set( CMAKE_C_FLAGS_RELEASE "-w -O2 -march=core2 -mtune=generic" )

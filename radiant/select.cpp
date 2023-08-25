@@ -126,8 +126,8 @@ trace_t Test_Ray( vec3_t origin, vec3_t dir, int flags ){
 				continue;
 			}
 
-			//if (!g_bShowPatchBounds && brush->patchBrush)
-			//  continue;
+			if ( ( flags & SF_SINGLEFACE ) && brush->patchBrush )
+				continue;
 
 			face = Brush_Ray( origin, dir, brush, &dist, flags );
 			if ( face && dist > 0 && dist < t.dist ) {
@@ -1473,7 +1473,9 @@ void Select_MergeEntity(){
    ====================
  */
 void Select_Seperate( void ) {
+	Undo_Start( "Entity ungroup into worldspawn" );
 	Select_GroupEntity( world_entity );
+	Undo_End();
 }
 
 /*

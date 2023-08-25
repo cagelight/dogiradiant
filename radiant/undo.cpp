@@ -50,16 +50,16 @@ typedef struct undo_s
 	struct undo_s *prev, *next; //next and prev undo in list
 } undo_t;
 
-undo_t *g_undolist;                     //first undo in the list
-undo_t *g_lastundo;                     //last undo in the list
-undo_t *g_redolist;                     //first redo in the list
-undo_t *g_lastredo;                     //last undo in list
-int g_undoMaxSize = 64;                 //maximum number of undos
-int g_undoSize = 0;                     //number of undos in the list
-int g_undoMaxMemorySize = 2 * 1024 * 1024;  //maximum undo memory (default 2 MB)
-int g_undoMemorySize = 0;               //memory size of undo buffer
-int g_undoId = 1;                       //current undo ID (zero is invalid id)
-int g_redoId = 1;                       //current redo ID (zero is invalid id)
+undo_t *g_undolist;                           //first undo in the list
+undo_t *g_lastundo;                           //last undo in the list
+undo_t *g_redolist;                           //first redo in the list
+undo_t *g_lastredo;                           //last undo in list
+int g_undoMaxSize = 64;                       //maximum number of undos
+int g_undoSize = 0;                           //number of undos in the list
+int g_undoMaxMemorySize = 512 * 1024 * 1024;  //maximum undo memory (default 512 MB)
+int g_undoMemorySize = 0;                     //memory size of undo buffer
+int g_undoId = 1;                             //current undo ID (zero is invalid id)
+int g_redoId = 1;                             //current redo ID (zero is invalid id)
 
 /*
    =============
@@ -227,7 +227,7 @@ void Undo_GeneralStart( const char *operation ){
 
 	if ( g_lastundo ) {
 		if ( !g_lastundo->done ) {
-			Sys_FPrintf( SYS_WRN, "WARNING last undo not finished.\n" );
+			Sys_FPrintf( SYS_WRN, "WARNING: last undo not finished.\n" );
 		}
 	}
 
@@ -641,6 +641,10 @@ void Undo_Undo( qboolean bSilent ){
 	if ( !redo ) {
 		return;
 	}
+	
+	// This has to be disabled - otherwise big operations can take minutes
+	g_bScreenUpdates = false;
+	
 	memset( redo, 0, sizeof( undo_t ) );
 	redo->brushlist.next = &redo->brushlist;
 	redo->brushlist.prev = &redo->brushlist;
@@ -801,9 +805,13 @@ void Undo_Redo( void ){
 	}
 	if ( g_lastundo ) {
 		if ( !g_lastundo->done ) {
-			Sys_FPrintf( SYS_WRN, "WARNING: last undo not finished.\n" );
+			Sys_FPrintf( SYS_WRN, "WARNING: last redo not yet finished. Redo canceled!\n" );
 		}
 	}
+	
+	// This has to be disabled - otherwise big operations can take minutes
+	g_bScreenUpdates = false;
+	
 	// get the last redo
 	redo = g_lastredo;
 	if ( g_lastredo->prev ) {

@@ -942,11 +942,15 @@ void XYWnd::OnMouseMove( guint32 nFlags, int pointx, int pointy ){
 
 	m_ptDownX = 0;
 	m_ptDownY = 0;
+	
+	constexpr float minMovement = 8;
+	constexpr float maxMovement = 64;
 
 	if ( g_PrefsDlg.m_bChaseMouse == TRUE &&
 		 ( pointx < 0 || pointy < 0 || pointx > m_nWidth || pointy > m_nHeight ) &&
 		 HasCapture() ) {
-		float fAdjustment = ( g_qeglobals.d_gridsize / 8 * 64 ) / m_fScale;
+		float fAdjustment = ( g_qeglobals.d_gridsize );
+		fAdjustment = CLAMP( fAdjustment, minMovement, maxMovement );
 		//m_ptDrag = point;
 		m_ptDragAdjX = 0;
 		m_ptDragAdjY = 0;
@@ -2077,6 +2081,11 @@ void XYWnd::XY_ToGridPoint( int x, int y, vec3_t point ){
    ============================================================================
  */
 
+
+float getGridValueForTextureChanges() {
+	return CLAMP( g_qeglobals.d_gridsize, 1, 128 ) / 10000;
+}
+
 /*
    ==============
    XY_DrawGrid
@@ -2088,6 +2097,7 @@ void XYWnd::XY_DrawGrid(){
 	char text[32];
 	int step, stepx, stepy, colour;
 	step = stepx = stepy = g_qeglobals.d_gridsize * 8;
+	if (step < 1) step = stepx = stepy = 1;
 
 /*
 	int stepSize = (int)(8 / m_fScale);

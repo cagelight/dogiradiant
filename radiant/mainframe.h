@@ -317,6 +317,7 @@ struct SKeyInfo
 #define ID_BRUSH_9SIDED                 40125
 #define ID_SELECTION_ARBITRARYROTATION  40126
 #define ID_BRUSH_ARBITRARYSIDED         40127
+#define ID_SELECTION_GROUPBRUSHES       40129
 #define ID_SELECTION_UNGROUPENTITY      40130
 #define ID_MISC_SELECTENTITYCOLOR       40131
 #define ID_MISC_PRINTXY                 40132
@@ -411,18 +412,23 @@ struct SKeyInfo
 
 #define ID_SELECT_FUNC_GROUP            40233
 
-// those must have their own ID chunk ID_GRID_025 <= ID_GRID <= ID_GRID_256
-#define ID_GRID_025                     40300
-#define ID_GRID_05                      40301
-#define ID_GRID_1                       40302
-#define ID_GRID_2                       40303
-#define ID_GRID_4                       40304
-#define ID_GRID_8                       40305
-#define ID_GRID_16                      40306
-#define ID_GRID_32                      40307
-#define ID_GRID_64                      40308
-#define ID_GRID_128                     40309
-#define ID_GRID_256                     40310
+// those must have their own ID chunk ID_GRID_00625 <= ID_GRID <= ID_GRID_2048
+#define ID_GRID_00625                   40300
+#define ID_GRID_0125                    40301
+#define ID_GRID_025                     40302
+#define ID_GRID_05                      40303
+#define ID_GRID_1                       40304
+#define ID_GRID_2                       40305
+#define ID_GRID_4                       40306
+#define ID_GRID_8                       40307
+#define ID_GRID_16                      40308
+#define ID_GRID_32                      40309
+#define ID_GRID_64                      40310
+#define ID_GRID_128                     40311
+#define ID_GRID_256                     40312
+#define ID_GRID_512                     40313
+#define ID_GRID_1024                    40314
+#define ID_GRID_2048                    40315
 
 #define ID_FILE_CHECKUPDATE             40320
 
@@ -683,6 +689,7 @@ void OnSelectionSelectcompletetall();
 void OnSelectionSelectinside();
 void OnSelectionSelectpartialtall();
 void OnSelectionSelecttouching();
+void OnSelectionGroupbrushes();
 void OnSelectionUngroupentity();
 void OnSelectionMergeentity();
 void OnSelectionGroupworld();

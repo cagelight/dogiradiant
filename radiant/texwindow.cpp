@@ -46,7 +46,7 @@
 
 #define TYP_MIPTEX  68
 
-#define FONT_HEIGHT 10
+#define TEXTURE_VERTICAL_PAD 27
 
 int texture_mode = GL_LINEAR_MIPMAP_LINEAR;
 
@@ -963,6 +963,18 @@ void Texture_ShowDirectory(){
 
 /*
    ==============
+   ClampTextureWindow
+   ==============
+ */
+
+static void ClampTextureWindow() {
+	float max = g_qeglobals.d_texturewin.m_nTotalHeight - g_qeglobals.d_texturewin.height;
+	if (max < 0) max = 0;
+	g_qeglobals.d_texturewin.originy = CLAMP( g_qeglobals.d_texturewin.originy, -max, 0 );
+}
+
+/*
+   ==============
    Texture_ShowDirectory
    1) Load the shaders for the given directory
    2) Scan the remaining texture, load them and assign them a default shader (the "noshader" shader)
@@ -979,10 +991,9 @@ void Texture_GetSize( qtexture_t *tex, int & nWidth, int & nHeight ){
 	if( !tex ) 
 		return;
 
-	if( g_PrefsDlg.m_bFixedTextureSize && g_PrefsDlg.m_nFixedTextureSizeWidth > 0 && g_PrefsDlg.m_nFixedTextureSizeHeight > 0 )
+	if( g_PrefsDlg.m_bFixedTextureSize && g_PrefsDlg.m_nFixedTextureSize > 0 )
 	{
-		nWidth = g_PrefsDlg.m_nFixedTextureSizeWidth;
-		nHeight = g_PrefsDlg.m_nFixedTextureSizeHeight;
+		nHeight = nWidth = g_PrefsDlg.m_nFixedTextureSize;
 		float ratioWidth = nHeight / nWidth;
 		float ratioHeight = nWidth / nHeight;
 		if( tex->width * ratioWidth > tex->height * ratioHeight )
@@ -1007,6 +1018,7 @@ void Texture_ResetPosition(){
 
 	//this shouldn't ever happen, we startup with notex
 	if ( !g_qeglobals.d_texturewin.texdef.GetName()[0] ) {
+		g_qeglobals.d_texturewin.originy = 0;
 		return;
 	}
 
@@ -1038,7 +1050,7 @@ void Texture_ResetPosition(){
 			// if the bottom of our selected texture will fit with origin 0, use that
 			// to prevent scrolling uglyness (stuff scrolled off screen when
 			// everything would fit)
-			if ( -( y - nHeight - 2 * FONT_HEIGHT ) <  g_qeglobals.d_texturewin.height ) {
+			if ( -( y - nHeight - 2 * TEXTURE_VERTICAL_PAD ) <  g_qeglobals.d_texturewin.height ) {
 				g_qeglobals.d_texturewin.originy = 0;
 				break;
 			}
@@ -1049,14 +1061,15 @@ void Texture_ResetPosition(){
 			}
 
 			// if current is off the bottom, put it on the bottom
-			if ( y - nHeight - 2 * FONT_HEIGHT < g_qeglobals.d_texturewin.originy - g_qeglobals.d_texturewin.height ) {
-				g_qeglobals.d_texturewin.originy = y - nHeight - 2 * FONT_HEIGHT + g_qeglobals.d_texturewin.height;
+			if ( y - nHeight - 2 * TEXTURE_VERTICAL_PAD < g_qeglobals.d_texturewin.originy - g_qeglobals.d_texturewin.height ) {
+				g_qeglobals.d_texturewin.originy = y - nHeight - 2 * TEXTURE_VERTICAL_PAD + g_qeglobals.d_texturewin.height;
 				break;
 			}
 			// if we made it here, it should already be in view
 			break;
 		}
 	}
+	ClampTextureWindow();
 	Sys_UpdateWindows( W_TEXTURE );
 }
 
@@ -1233,10 +1246,9 @@ void Texture_GetPosSize( qtexture_t *tex, int & nWidth, int & nHeight ){
 	if( !tex ) 
 		return;
 
-	if( g_PrefsDlg.m_bFixedTextureSize && g_PrefsDlg.m_nFixedTextureSizeWidth > 0 && g_PrefsDlg.m_nFixedTextureSizeHeight > 0 )
+	if( g_PrefsDlg.m_bFixedTextureSize && g_PrefsDlg.m_nFixedTextureSize > 0 )
 	{
-		nWidth = g_PrefsDlg.m_nFixedTextureSizeWidth;
-		nHeight = g_PrefsDlg.m_nFixedTextureSizeHeight;
+		nHeight = nWidth = g_PrefsDlg.m_nFixedTextureSize;
 	} else {
 		nWidth = (int)( tex->width * ( (float)g_PrefsDlg.m_nTextureScale / 100 ) );
 		nHeight = (int)( tex->height * ( (float)g_PrefsDlg.m_nTextureScale / 100 ) );
@@ -1314,7 +1326,7 @@ IShader* Texture_NextPos( int *x, int *y ){
 	Texture_GetPosSize( q, nWidth, nHeight );
 	if ( current_x + nWidth > g_qeglobals.d_texturewin.width - 8 && current_row ) { // go to the next row unless the texture is the first on the row
 		current_x = 8;
-		current_y -= current_row + FONT_HEIGHT + 4;
+		current_y -= current_row + TEXTURE_VERTICAL_PAD + 4;
 		current_row = 0;
 	}
 
@@ -1467,7 +1479,7 @@ void SelectTexture( int mx, int my, bool bShift, bool bFitScale ){
 		int nHeight;
 		Texture_GetPosSize( q, nWidth, nHeight );
 		if ( mx > x && mx - x < nWidth
-			 && my < y && y - my < nHeight + FONT_HEIGHT ) {
+			 && my < y && y - my < nHeight + TEXTURE_VERTICAL_PAD ) {
 			if ( bShift ) {
 				if ( pCurrentShader->IsDefault() ) {
 					Sys_FPrintf( SYS_ERR, "ERROR: %s is not a shader, it's a texture.\n", pCurrentShader->getName() );
@@ -1557,7 +1569,7 @@ void Texture_MouseMoved( int x, int y, int buttons ){
 	int scale = 1;
 
 	if ( buttons & MK_SHIFT ) {
-		scale = 4;
+		scale = 6;
 	}
 
 	// rbutton = drag texture origin
@@ -1565,16 +1577,13 @@ void Texture_MouseMoved( int x, int y, int buttons ){
 		Sys_GetCursorPos( &x, &y );
 		if ( y != textures_cursory ) {
 			g_qeglobals.d_texturewin.originy += ( y - textures_cursory ) * scale;
-			if ( g_qeglobals.d_texturewin.originy > 0 ) {
-				g_qeglobals.d_texturewin.originy = 0;
-			}
 			Sys_SetCursorPos( textures_cursorx, textures_cursory );
 
 			// (g_PrefsDlg.m_bTextureScrollbar && g_qeglobals_gui.d_texture_scroll != NULL)
 			// fixes broken texture scrolling when scrollbar is disabled
+			ClampTextureWindow();
 			GtkAdjustment *vadjustment = gtk_range_get_adjustment( GTK_RANGE( g_qeglobals_gui.d_texture_scroll ) );
 			gtk_adjustment_set_value( vadjustment, abs( g_qeglobals.d_texturewin.originy ) );
-			//
 		}
 		return;
 	}
@@ -1644,7 +1653,7 @@ void Texture_Draw( int width, int height ){
 		last_height = MAX( nHeight, last_height );
 
 		// Is this texture visible?
-		if ( ( y - nHeight - FONT_HEIGHT < g_qeglobals.d_texturewin.originy )
+		if ( ( y - nHeight - TEXTURE_VERTICAL_PAD < g_qeglobals.d_texturewin.originy )
 			 && ( y > g_qeglobals.d_texturewin.originy - height ) ) {
 			// borders rules:
 			// if it's the current texture, draw a thick red line, else:
@@ -1657,10 +1666,10 @@ void Texture_Draw( int width, int height ){
 				qglDisable( GL_TEXTURE_2D );
 
 				qglBegin( GL_LINE_LOOP );
-				qglVertex2f( x - 4,y - FONT_HEIGHT + 4 );
-				qglVertex2f( x - 4,y - FONT_HEIGHT - nHeight - 4 );
-				qglVertex2f( x + 4 + nWidth,y - FONT_HEIGHT - nHeight - 4 );
-				qglVertex2f( x + 4 + nWidth,y - FONT_HEIGHT + 4 );
+				qglVertex2f( x - 4,y - TEXTURE_VERTICAL_PAD + 4 );
+				qglVertex2f( x - 4,y - TEXTURE_VERTICAL_PAD - nHeight - 4 );
+				qglVertex2f( x + 4 + nWidth,y - TEXTURE_VERTICAL_PAD - nHeight - 4 );
+				qglVertex2f( x + 4 + nWidth,y - TEXTURE_VERTICAL_PAD + 4 );
 				qglEnd();
 
 				qglEnable( GL_TEXTURE_2D );
@@ -1675,10 +1684,10 @@ void Texture_Draw( int width, int height ){
 					qglDisable( GL_TEXTURE_2D );
 
 					qglBegin( GL_LINE_LOOP );
-					qglVertex2f( x - 1,y + 1 - FONT_HEIGHT );
-					qglVertex2f( x - 1,y - nHeight - 1 - FONT_HEIGHT );
-					qglVertex2f( x + 1 + nWidth,y - nHeight - 1 - FONT_HEIGHT );
-					qglVertex2f( x + 1 + nWidth,y + 1 - FONT_HEIGHT );
+					qglVertex2f( x - 1,y + 1 - TEXTURE_VERTICAL_PAD );
+					qglVertex2f( x - 1,y - nHeight - 1 - TEXTURE_VERTICAL_PAD );
+					qglVertex2f( x + 1 + nWidth,y - nHeight - 1 - TEXTURE_VERTICAL_PAD );
+					qglVertex2f( x + 1 + nWidth,y + 1 - TEXTURE_VERTICAL_PAD );
 					qglEnd();
 					qglEnable( GL_TEXTURE_2D );
 				}
@@ -1688,10 +1697,10 @@ void Texture_Draw( int width, int height ){
 					qglColor3f( 0.5,1,0.5 );
 					qglDisable( GL_TEXTURE_2D );
 					qglBegin( GL_LINE_LOOP );
-					qglVertex2f( x - 3,y + 3 - FONT_HEIGHT );
-					qglVertex2f( x - 3,y - nHeight - 3 - FONT_HEIGHT );
-					qglVertex2f( x + 3 + nWidth,y - nHeight - 3 - FONT_HEIGHT );
-					qglVertex2f( x + 3 + nWidth,y + 3 - FONT_HEIGHT );
+					qglVertex2f( x - 3,y + 3 - TEXTURE_VERTICAL_PAD );
+					qglVertex2f( x - 3,y - nHeight - 3 - TEXTURE_VERTICAL_PAD );
+					qglVertex2f( x + 3 + nWidth,y - nHeight - 3 - TEXTURE_VERTICAL_PAD );
+					qglVertex2f( x + 3 + nWidth,y + 3 - TEXTURE_VERTICAL_PAD );
 					qglEnd();
 					qglEnable( GL_TEXTURE_2D );
 				}
@@ -1703,20 +1712,20 @@ void Texture_Draw( int width, int height ){
 			qglColor3f( 1,1,1 );
 			qglBegin( GL_QUADS );
 			qglTexCoord2f( 0,0 );
-			qglVertex2f( x,y - FONT_HEIGHT );
+			qglVertex2f( x,y - TEXTURE_VERTICAL_PAD );
 			qglTexCoord2f( 1,0 );
-			qglVertex2f( x + nWidth,y - FONT_HEIGHT );
+			qglVertex2f( x + nWidth,y - TEXTURE_VERTICAL_PAD );
 			qglTexCoord2f( 1,1 );
-			qglVertex2f( x + nWidth,y - FONT_HEIGHT - nHeight );
+			qglVertex2f( x + nWidth,y - TEXTURE_VERTICAL_PAD - nHeight );
 			qglTexCoord2f( 0,1 );
-			qglVertex2f( x,y - FONT_HEIGHT - nHeight );
+			qglVertex2f( x,y - TEXTURE_VERTICAL_PAD - nHeight );
 			qglEnd();
 
 			// draw the texture name
 			qglDisable( GL_TEXTURE_2D );
 			qglColor3f( 1,1,1 );
 
-			qglRasterPos2f( x, y - FONT_HEIGHT + 2 );
+			qglRasterPos2f( x, y - TEXTURE_VERTICAL_PAD + 2 );
 
 			// don't draw the directory name
 			name = (char*)pCurrentShader->getName();
@@ -1729,7 +1738,7 @@ void Texture_Draw( int width, int height ){
 		}
 	}
 
-	g_qeglobals.d_texturewin.m_nTotalHeight = abs( y ) + last_height + FONT_HEIGHT + 4;
+	g_qeglobals.d_texturewin.m_nTotalHeight = abs( y ) + last_height + TEXTURE_VERTICAL_PAD * 2 + 4;
 
 	// reset the current texture
 	qglBindTexture( GL_TEXTURE_2D, 0 );
@@ -1969,6 +1978,7 @@ void TexWnd::UpdatePrefs(){
 		gtk_widget_hide( g_qeglobals_gui.d_texture_scroll );
 	}
 	m_bNeedRange = true;
+	ClampTextureWindow();
 	RedrawWindow();
 }
 
@@ -1979,21 +1989,9 @@ void TexWnd::FocusEdit() {
 }
 
 void TexWnd::OnMouseWheel( bool bUp, int pointx, int pointy ){
-	if ( bUp ) {
-		if ( g_qeglobals.d_texturewin.originy < 0 ) {
-			g_qeglobals.d_texturewin.originy += g_PrefsDlg.m_nWheelInc;
-			// clamp so we don't get jiggle if moved by less than scrollwheel increment
-			if ( g_qeglobals.d_texturewin.originy > 0 ) {
-				g_qeglobals.d_texturewin.originy = 0;
-			}
-		}
-	}
-	else
-	{
-		if ( g_qeglobals.d_texturewin.originy > ( -g_qeglobals.d_texturewin.m_nTotalHeight + g_qeglobals.d_texturewin.height ) ) {
-			g_qeglobals.d_texturewin.originy -= g_PrefsDlg.m_nWheelInc;
-		}
-	}
+	
+	g_qeglobals.d_texturewin.originy += bUp ? g_PrefsDlg.m_nWheelInc : -g_PrefsDlg.m_nWheelInc;
+	ClampTextureWindow();
 	GtkAdjustment *vadjustment = gtk_range_get_adjustment( GTK_RANGE( g_qeglobals_gui.d_texture_scroll ) );
 	gtk_adjustment_set_value( vadjustment, abs( g_qeglobals.d_texturewin.originy ) );
 

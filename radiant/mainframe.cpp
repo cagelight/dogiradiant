@@ -199,6 +199,7 @@ SCommandInfo g_Commands[] =
 	{"ToggleConsole", GDK_KEY_O, 0, ID_TOGGLECONSOLE, "menu_toggleconsole"},
 	{"ToggleView", GDK_KEY_V, 0x05, ID_TOGGLEVIEW, "menu_toggleview"},
 	{"ConnectSelection", GDK_KEY_K, 0x04, ID_SELECTION_CONNECT, "menu_selection_connect"},
+	{"GroupBrushes", GDK_KEY_G, 0x05, ID_SELECTION_GROUPBRUSHES, "menu_brushes_group"},
 	{"Brush3Sided", GDK_KEY_3, 0x04, ID_BRUSH_3SIDED, "menu_brush_3sided"},
 	{"Brush4Sided", GDK_KEY_4, 0x04, ID_BRUSH_4SIDED, "menu_brush_4sided"},
 	{"Brush5Sided", GDK_KEY_5, 0x04, ID_BRUSH_5SIDED, "menu_brush_5sided"},
@@ -404,7 +405,7 @@ gint HandleCommand( GtkWidget *widget, gpointer data ){
 			g_pParentWnd->OnViewNearest( id );
 		}
 	}
-	else if ( id >= ID_GRID_025 && id <= ID_GRID_256 ) {
+	else if ( id >= ID_GRID_00625 && id <= ID_GRID_2048 ) {
 		g_pParentWnd->OnGrid( id );
 	}
 	else if ( id >= ID_PLUGIN_START && id <= ID_PLUGIN_END ) {
@@ -530,6 +531,7 @@ gint HandleCommand( GtkWidget *widget, gpointer data ){
 		  case ID_SPLIT_SELECTED: g_pParentWnd->OnSplitSelected(); break;
 		  case ID_FLIP_CLIP: g_pParentWnd->OnFlipClip(); break;
 		  case ID_SELECTION_CONNECT: g_pParentWnd->OnSelectionConnect(); break;
+		  case ID_SELECTION_GROUPBRUSHES: g_pParentWnd->OnSelectionGroupbrushes(); break;
 		  case ID_SELECTION_UNGROUPENTITY: g_pParentWnd->OnSelectionUngroupentity(); break;
 		  case ID_SELECTION_MERGE: Select_MergeEntity(); break;
 		  case ID_SELECTION_SEPERATE: Select_Seperate(); break;
@@ -1247,6 +1249,8 @@ void MainFrame::create_main_menu( GtkWidget *window, GtkWidget *vbox ){
 	menu_separator( menu );
 	create_menu_item_with_mnemonic( menu, _( "Connect entities" ),
 									G_CALLBACK( HandleCommand ), ID_SELECTION_CONNECT );
+	create_menu_item_with_mnemonic( menu, _( "Group brushes" ),
+									G_CALLBACK( HandleCommand ), ID_SELECTION_GROUPBRUSHES );
 	create_menu_item_with_mnemonic( menu, _( "Ungroup entity" ),
 									G_CALLBACK( HandleCommand ), ID_SELECTION_UNGROUPENTITY );
 	create_menu_item_with_mnemonic( menu, _( "Make detail" ),
@@ -1265,8 +1269,14 @@ void MainFrame::create_main_menu( GtkWidget *window, GtkWidget *vbox ){
 	if ( g_PrefsDlg.m_bDetachableMenus ) {
 		menu_tearoff( menu );
 	}
-
-	item = create_radio_menu_item_with_mnemonic( menu, NULL, _( "Grid0.25" ),
+	
+	item = create_radio_menu_item_with_mnemonic( menu, NULL, _( "Grid0.0625" ),
+												 G_CALLBACK( HandleCommand ), ID_GRID_00625, FALSE );
+	g_object_set_data( G_OBJECT( window ), "menu_grid_00625", item );
+	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid0.125" ),
+												 G_CALLBACK( HandleCommand ), ID_GRID_0125, FALSE );
+	g_object_set_data( G_OBJECT( window ), "menu_grid_0125", item );
+	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid0.25" ),
 												 G_CALLBACK( HandleCommand ), ID_GRID_025, FALSE );
 	g_object_set_data( G_OBJECT( window ), "menu_grid_025", item );
 	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid0.5" ),
@@ -1299,6 +1309,15 @@ void MainFrame::create_main_menu( GtkWidget *window, GtkWidget *vbox ){
 	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid256" ),
 												 G_CALLBACK( HandleCommand ), ID_GRID_256, FALSE );
 	g_object_set_data( G_OBJECT( window ), "menu_grid_256", item );
+	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid512" ),
+												 G_CALLBACK( HandleCommand ), ID_GRID_512, FALSE );
+	g_object_set_data( G_OBJECT( window ), "menu_grid_512", item );
+	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid1024" ),
+												 G_CALLBACK( HandleCommand ), ID_GRID_1024, FALSE );
+	g_object_set_data( G_OBJECT( window ), "menu_grid_1024", item );
+	item = create_radio_menu_item_with_mnemonic( menu, item, _( "Grid2048" ),
+												 G_CALLBACK( HandleCommand ), ID_GRID_2048, FALSE );
+	g_object_set_data( G_OBJECT( window ), "menu_grid_2048", item );
 	menu_separator( menu );
 	item = create_check_menu_item_with_mnemonic( menu, _( "Snap to grid" ),
 												 G_CALLBACK( HandleCommand ), ID_SNAPTOGRID, TRUE );
@@ -4961,10 +4980,15 @@ void MainFrame::OnViewCubein(){
 	SetGridStatus();
 }
 
+#define CUBIC_CLIPPING_MAX 56
+#define CUBIC_CLIPPING_MIN 1
+#define CUBIC_CLIPPING_MULTIPLIER 2048
+
 void MainFrame::OnViewCubeout(){
-	g_PrefsDlg.m_nCubicScale++;
-	if ( g_PrefsDlg.m_nCubicScale > 22 ) {
-		g_PrefsDlg.m_nCubicScale = 22;
+	int old_scale = g_PrefsDlg.m_nCubicScale;
+	g_PrefsDlg.m_nCubicScale = CLAMP( g_PrefsDlg.m_nCubicScale + 1, CUBIC_CLIPPING_MIN, CUBIC_CLIPPING_MAX );
+	if (old_scale == g_PrefsDlg.m_nCubicScale) {
+		return;
 	}
 	g_PrefsDlg.SavePrefs();
 	Sys_UpdateWindows( W_CAMERA );
@@ -5519,6 +5543,18 @@ void MainFrame::OnSelectionConnect(){
 	Undo_End();
 }
 
+void MainFrame::OnSelectionGroupbrushes(){
+	Undo_Start( "group selected brushes" );
+	Undo_AddBrushList( &selected_brushes );
+	entity_t * e = Entity_Alloc();
+	SetKeyValue( e, "classname", "func_group" );
+	Select_GroupEntity( e );
+	Entity_AddToList( e, &entities );
+	Undo_EndBrushList( &selected_brushes );
+	Undo_EndEntity( e );
+	Undo_End();
+}
+
 void MainFrame::OnSelectionUngroupentity(){
 	Undo_Start( "ungroup selected entities" );
 	Undo_AddBrushList( &selected_brushes );
@@ -5598,31 +5634,34 @@ void MainFrame::OnBspCommand( unsigned int nID ){
 }
 
 void MainFrame::OnGrid( unsigned int nID ){
-	if ( nID == ID_GRID_025 ) {
-		g_qeglobals.d_gridsize = 0.25f;
-		g_qeglobals.d_bSmallGrid = true;
+	switch ( nID ) {
+		case ID_GRID_00625: g_qeglobals.d_gridsize = 0.0625f; goto smallgrid;
+		case ID_GRID_0125: g_qeglobals.d_gridsize = 0.125f; goto smallgrid;
+		case ID_GRID_025: g_qeglobals.d_gridsize = 0.25f; goto smallgrid;
+		case ID_GRID_05: g_qeglobals.d_gridsize = 0.5f; goto smallgrid;
+		case ID_GRID_1: g_qeglobals.d_gridsize = 0; goto biggrid;
+		case ID_GRID_2: g_qeglobals.d_gridsize = 1; goto biggrid;
+		case ID_GRID_4: g_qeglobals.d_gridsize = 2;  goto biggrid;
+		case ID_GRID_8: g_qeglobals.d_gridsize = 3; goto biggrid;
+		case ID_GRID_16: g_qeglobals.d_gridsize = 4; goto biggrid;
+		case ID_GRID_32: g_qeglobals.d_gridsize = 5; goto biggrid;
+		case ID_GRID_64: g_qeglobals.d_gridsize = 6; goto biggrid;
+		case ID_GRID_128: g_qeglobals.d_gridsize = 7; goto biggrid;
+		case ID_GRID_256: g_qeglobals.d_gridsize = 8; goto biggrid;
+		case ID_GRID_512: g_qeglobals.d_gridsize = 9; goto biggrid;
+		case ID_GRID_1024: g_qeglobals.d_gridsize = 10; goto biggrid;
+		case ID_GRID_2048: g_qeglobals.d_gridsize = 11; goto biggrid;
 	}
-	else if ( nID == ID_GRID_05 ) {
-		g_qeglobals.d_gridsize = 0.5f;
-		g_qeglobals.d_bSmallGrid = true;
-	}
-	else
-	{
-		switch ( nID )
-		{
-		case ID_GRID_1: g_qeglobals.d_gridsize = 0; break;
-		case ID_GRID_2: g_qeglobals.d_gridsize = 1; break;
-		case ID_GRID_4: g_qeglobals.d_gridsize = 2; break;
-		case ID_GRID_8: g_qeglobals.d_gridsize = 3; break;
-		case ID_GRID_16: g_qeglobals.d_gridsize = 4; break;
-		case ID_GRID_32: g_qeglobals.d_gridsize = 5; break;
-		case ID_GRID_64: g_qeglobals.d_gridsize = 6; break;
-		case ID_GRID_128: g_qeglobals.d_gridsize = 7; break;
-		case ID_GRID_256: g_qeglobals.d_gridsize = 8; break;
-		}
-		g_qeglobals.d_gridsize = 1 << (int)g_qeglobals.d_gridsize;
-		g_qeglobals.d_bSmallGrid = false;
-	}
+	
+	biggrid:
+	g_qeglobals.d_gridsize = 1 << (int)g_qeglobals.d_gridsize;
+	g_qeglobals.d_bSmallGrid = false;
+	goto end;
+	
+	smallgrid:
+	g_qeglobals.d_bSmallGrid = true;
+	
+	end:
 
 	SetGridStatus();
 
@@ -7170,21 +7209,34 @@ void MainFrame::OnGridPrev(){
 		g_qeglobals.d_bSmallGrid = true;
 		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_025" ) );
 	}
+	else if ( g_qeglobals.d_gridsize == 0.25 ) {
+		g_qeglobals.d_gridsize = 0.125;
+		g_qeglobals.d_bSmallGrid = true;
+		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_0125" ) );
+	}
+	else if ( g_qeglobals.d_gridsize == 0.125 ) {
+		g_qeglobals.d_gridsize = 0.0625;
+		g_qeglobals.d_bSmallGrid = true;
+		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_00625" ) );
+	}
 	else if ( g_qeglobals.d_gridsize > 1 ) {
 		g_qeglobals.d_gridsize = (int)g_qeglobals.d_gridsize >> 1;
 		g_qeglobals.d_bSmallGrid = false;
 
 		switch ( (int)g_qeglobals.d_gridsize )
 		{
-		case  1: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1" ) ); break;
-		case  2: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_2" ) ); break;
-		case  4: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_4" ) ); break;
-		case  8: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_8" ) ); break;
-		case  16: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_16" ) ); break;
-		case  32: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_32" ) ); break;
-		case  64: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_64" ) ); break;
-		case 128: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_128" ) ); break;
-		case 256: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_256" ) ); break;
+			case  1: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1" ) ); break;
+			case  2: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_2" ) ); break;
+			case  4: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_4" ) ); break;
+			case  8: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_8" ) ); break;
+			case  16: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_16" ) ); break;
+			case  32: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_32" ) ); break;
+			case  64: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_64" ) ); break;
+			case 128: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_128" ) ); break;
+			case 256: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_256" ) ); break;
+			case 512: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_512" ) ); break;
+			case 1024: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1024" ) ); break;
+			case 2048: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_2048" ) ); break;
 		default: return;
 		}
 
@@ -7209,7 +7261,17 @@ void MainFrame::OnGridPrev(){
 
 void MainFrame::OnGridNext(){
 	GtkWidget *item;
-	if ( g_qeglobals.d_gridsize == 0.25 ) {
+	if ( g_qeglobals.d_gridsize == 0.0625 ) {
+		g_qeglobals.d_gridsize = 0.125;
+		g_qeglobals.d_bSmallGrid = true;
+		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_0125" ) );
+	}
+	else if ( g_qeglobals.d_gridsize == 0.125 ) {
+		g_qeglobals.d_gridsize = 0.25;
+		g_qeglobals.d_bSmallGrid = true;
+		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_025" ) );
+	}
+	else if ( g_qeglobals.d_gridsize == 0.25 ) {
 		g_qeglobals.d_gridsize = 0.5;
 		g_qeglobals.d_bSmallGrid = true;
 		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_05" ) );
@@ -7219,21 +7281,24 @@ void MainFrame::OnGridNext(){
 		g_qeglobals.d_bSmallGrid = false;
 		item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1" ) );
 	}
-	else if ( g_qeglobals.d_gridsize < 256 ) {
+	else if ( g_qeglobals.d_gridsize < 2048 ) {
 		g_qeglobals.d_gridsize = (int)g_qeglobals.d_gridsize << 1;
 		g_qeglobals.d_bSmallGrid = false;
 
 		switch ( (int)g_qeglobals.d_gridsize )
 		{
-		case  1: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1" ) ); break;
-		case  2: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_2" ) ); break;
-		case  4: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_4" ) ); break;
-		case  8: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_8" ) ); break;
-		case  16: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_16" ) ); break;
-		case  32: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_32" ) ); break;
-		case  64: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_64" ) ); break;
-		case 128: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_128" ) ); break;
-		case 256: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_256" ) ); break;
+			case  1: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1" ) ); break;
+			case  2: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_2" ) ); break;
+			case  4: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_4" ) ); break;
+			case  8: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_8" ) ); break;
+			case  16: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_16" ) ); break;
+			case  32: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_32" ) ); break;
+			case  64: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_64" ) ); break;
+			case 128: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_128" ) ); break;
+			case 256: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_256" ) ); break;
+			case 512: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_512" ) ); break;
+			case 1024: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_1024" ) ); break;
+			case 2048: item = GTK_WIDGET( g_object_get_data( G_OBJECT( m_pWidget ), "menu_grid_2048" ) ); break;
 		default:  item = NULL;
 		}
 

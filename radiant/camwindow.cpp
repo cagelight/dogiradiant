@@ -153,6 +153,13 @@ void CamWnd::OnMouseMove( guint32 flags, int pointx, int pointy ){
 			Select_ScaleTexture( pointx - m_ptLastCursorX, m_ptLastCursorY - pointy );
 		}
 		else{
+			vec3_t vecx, vecy, up { 0, 0, 1 };
+			CrossProduct( m_Camera.forward, up, vecx );
+			CrossProduct( m_Camera.vright, up, vecy );
+			VectorScale( vecx, m_ptLastCursorX - pointx, vecx );
+			VectorScale( vecy, m_ptLastCursorY - pointy, vecy );
+			
+			//Select_ShiftTexture( vecx[0] + vecy[0], - ( vecx[1] + vecy[1] ) );
 			Select_ShiftTexture( pointx - m_ptLastCursorX, m_ptLastCursorY - pointy );
 		}
 	}
@@ -1330,7 +1337,7 @@ void CamWnd::Cam_Draw(){
 
 	screenaspect = (float)m_Camera.width / m_Camera.height;
 	yfov = 2 * atan( (float)m_Camera.height / m_Camera.width ) * 180 / Q_PI;
-	qgluPerspective( yfov,  screenaspect,  8,  32768 );
+	qgluPerspective( yfov,  screenaspect,  8,  131072 );
 
 	// we're too lazy to calc projection matrix ourselves!!!
 	qglGetFloatv( GL_PROJECTION_MATRIX, &m_Camera.projection[0][0] );

@@ -280,7 +280,7 @@ static gint OnDialogKey( GtkWidget* widget, GdkEventKey* event, gpointer data ) 
   if ( g_surfwin ) {
     if ( event->keyval == GDK_KEY_Return ) {
       if ( g_dlgSurface.m_bEditingTextureWidget ) {
-        OnApply( NULL, NULL );
+        OnApply( widget, NULL );
         g_dlgSurface.m_bEditingTextureWidget = false;
       } else {
         OnDone( NULL, NULL );

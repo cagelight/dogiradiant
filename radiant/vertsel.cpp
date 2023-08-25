@@ -182,7 +182,7 @@ void SelectVertex( int p1 ){
 	}
 }
 
-#define SELECT_EPSILON 8
+#define SELECT_EPSILON 12
 
 void SelectVertexByRay( vec3_t org, vec3_t dir ){
 	int i, besti;
