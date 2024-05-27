@@ -112,6 +112,10 @@ target_include_directories( mathlib PUBLIC
 	"libs"
 )
 
+target_link_libraries( mathlib PUBLIC
+	"m"
+)
+
 # ================================
 # MD5LIB
 # ================================

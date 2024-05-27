@@ -1362,8 +1362,6 @@ void Select_SelectGroup( entity_t* group ){
 	Undo_AddBrushList( &selected_brushes );
 	Undo_End();
 
-	Select_Deselect();
-
 	b = &group->brushes;
 
 	do

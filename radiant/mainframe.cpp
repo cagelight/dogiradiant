@@ -39,6 +39,8 @@
 #include "patchdialog.h"
 #include "filters.h"
 
+#include <unordered_set>
+
 // use this to verbose what happens with the keyboard
 #ifdef _DEBUG
 //  #define DBG_KBD
@@ -6981,13 +6983,17 @@ void MainFrame::OnSelectFuncGroup(){
 	// check to see if the selected brush is part of a func group
 	// if it is, deselect everything and reselect the next brush
 	// in the group
-	brush_t *b = selected_brushes.next;
-	entity_t * e;
-	if ( b != &selected_brushes ) {
+	
+	std::unordered_set<entity_t *> groups;
+	for ( brush_t *b = selected_brushes.next ; b != &selected_brushes ; b = b->next ) {
 		if ( strcmpi( b->owner->eclass->name, "worldspawn" ) != 0 ) {
-			e = b->owner;
-			Select_SelectGroup( e );
+			groups.insert(b->owner);
 		}
+	}
+	
+	Select_Deselect();
+	for (entity_t * e : groups) {
+		Select_SelectGroup( e );
 	}
 }
 
