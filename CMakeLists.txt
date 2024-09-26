@@ -12,6 +12,7 @@ pkg_check_modules(ATK REQUIRED atk)
 pkg_check_modules(JPEG REQUIRED libjpeg)
 pkg_check_modules(MINIZ REQUIRED minizip)
 pkg_check_modules(PNG REQUIRED libpng)
+pkg_check_modules(JXL REQUIRED libjxl)
 
 set( PLATFORM_LIBS "" )
 if( UNIX )
@@ -507,6 +508,35 @@ target_link_libraries( imagepng PUBLIC
 )
 
 install( TARGETS imagepng LIBRARY DESTINATION modules )
+
+# ================================
+# IMAGEJXL
+# ================================
+
+set( imagejxlFiles
+	"plugins/imagejxl/plugin.cpp"
+)
+
+add_library( imagejxl SHARED ${imagejxlFiles} )
+set_property( TARGET imagejxl PROPERTY PREFIX "" )
+
+target_include_directories( imagejxl PUBLIC
+	${GLIB2_INCLUDE_DIRS}
+	${XML2_INCLUDE_DIRS}
+	${JXL_INCLUDE_DIRS}
+	"include"
+	"libs"
+)
+
+target_link_libraries( imagejxl PUBLIC 
+	${GLIB2_LIBRARIES}
+	${XML2_LIBRARIES}
+	${JXL_LIBRARIES}
+	synapse
+)
+
+install( TARGETS imagejxl LIBRARY DESTINATION modules )
+
 
 # ================================
 # MAP
