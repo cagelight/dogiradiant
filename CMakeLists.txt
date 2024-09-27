@@ -144,6 +144,7 @@ set( picomodelFiles
 	"libs/picomodel/pm_3ds.c"
 	"libs/picomodel/pm_ase.c"
 	"libs/picomodel/pm_fm.c"
+	"libs/picomodel/pm_iqm.c"
 	"libs/picomodel/pm_lwo.c"
 	"libs/picomodel/pm_md2.c"
 	"libs/picomodel/pm_md3.c"
